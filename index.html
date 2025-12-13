@@ -172,7 +172,7 @@
             
             body, main { 
                 display: block !important; 
-                height: auto !important; /* FIX: Crucial to allow body/main to expand */
+                height: auto !important; 
                 margin: 0; 
                 padding: 0; 
                 background-color: #fff; 
@@ -183,9 +183,9 @@
             .panel { 
                 flex: none !important; 
                 width: 100% !important; 
-                height: auto !important; /* FIX: Remove fixed screen height constraint */
+                height: auto !important; 
                 min-height: auto !important;
-                overflow: visible !important; /* Ensure content is not clipped */
+                overflow: visible !important; 
                 box-sizing: border-box; 
                 padding: 0; 
             }
@@ -329,6 +329,7 @@
 
             <input type="file" id="file-upload" style="display: none;" onchange="handleImport(event)">
             <button onclick="document.getElementById('file-upload').click()" title="Load file into editor">Import</button>
+            <button onclick="resetApplication()" title="Clear saved content, themes, and settings.">Reset App</button>
         </div>
     </header>
 
@@ -597,6 +598,26 @@ function calculate_score(team_data) {
                 }
             }
         });
+
+        // --- Application Reset Function ---
+
+        function resetApplication() {
+            const confirmation = confirm("Are you sure you want to reset the application? This will permanently delete ALL saved content, themes, and settings from this browser's storage and reload the page.");
+
+            if (confirmation) {
+                // Clear all application-specific localStorage keys
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(FILENAME_KEY);
+                localStorage.removeItem(THEME_KEY);
+                localStorage.removeItem(FONT_KEY);
+                localStorage.removeItem(COLOR_TEXT_KEY);
+                localStorage.removeItem(COLOR_BG_KEY);
+
+                // Reload the page to initialize with defaults
+                alert("Application storage cleared. Reloading...");
+                window.location.reload();
+            }
+        }
 
         // --- File I/O Functions ---
 

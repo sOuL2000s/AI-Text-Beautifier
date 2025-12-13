@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZenWrite: Minimal Markdown Studio</title>
+    <title>ZenWrite: Custom Markdown Studio</title>
 
     <!-- Essential Libraries via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -14,10 +14,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-
-    <!-- PDF EXPORT (REINTRODUCED: Note: Client-side PDF via html2canvas is lower quality than native print) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <!-- Embedded CSS (Layout, Themes, and Print Optimization) -->
     <style>
@@ -33,32 +29,43 @@
             --code-bg: #f4f4f4;
             --link-color: #3498db;
             --editor-font: 'Consolas', 'Monospace';
-            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --content-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             --status-bg: #333;
             --status-text: #fff;
+            --action-log-color: #ffeb3b;
         }
 
-        /* --- Theme Definitions --- (Same as previous version, omitted for brevity but included in the code below) */
+        /* --- Theme Definitions (No Numbers) --- */
         .theme-dark { --bg-color: #222; --text-color: #ccc; --header-bg: #1c1c1c; --header-text: #fff; --panel-border: #444; --editor-bg: #282c34; --preview-bg: #1e1e1e; --code-bg: #2d313a; --link-color: #79a8e9; --status-bg: #111; }
-        .theme-sepia { --bg-color: #f7f3e0; --text-color: #5b4636; --header-bg: #8d7b68; --header-text: #fff; --panel-border: #d4cbb8; --editor-bg: #fffbf0; --preview-bg: #fffbf0; --code-bg: #eee9dc; --font-family: 'Georgia', serif; --link-color: #2d6e9e; --status-bg: #5b4636; }
-        .theme-academic { --bg-color: #ffffff; --text-color: #1a1a1a; --header-bg: #003366; --header-text: #fff; --panel-border: #a1b2c4; --editor-bg: #ffffff; --preview-bg: #ffffff; --code-bg: #e6f0ff; --font-family: 'Times New Roman', serif; --link-color: #0056b3; --status-bg: #003366; }
+        .theme-sepia { --bg-color: #f7f3e0; --text-color: #5b4636; --header-bg: #8d7b68; --header-text: #fff; --panel-border: #d4cbb8; --editor-bg: #fffbf0; --preview-bg: #fffbf0; --code-bg: #eee9dc; --content-font: 'Georgia', serif; --link-color: #2d6e9e; --status-bg: #5b4636; }
+        .theme-academic { --bg-color: #ffffff; --text-color: #1a1a1a; --header-bg: #003366; --header-text: #fff; --panel-border: #a1b2c4; --editor-bg: #ffffff; --preview-bg: #ffffff; --code-bg: #e6f0ff; --content-font: 'Times New Roman', serif; --link-color: #0056b3; --status-bg: #003366; }
         .theme-minimal { --bg-color: #ffffff; --text-color: #111; --header-bg: #f0f0f0; --header-text: #333; --panel-border: #eee; --editor-bg: #ffffff; --preview-bg: #ffffff; --code-bg: #f8f8f8; --link-color: #000000; --status-bg: #f0f0f0; --status-text: #333; }
         .theme-ocean { --bg-color: #e0f7fa; --text-color: #004d40; --header-bg: #00bcd4; --header-text: #fff; --panel-border: #b2ebf2; --editor-bg: #ffffff; --preview-bg: #ffffff; --code-bg: #b2ebf2; --link-color: #0097a7; --status-bg: #0097a7; }
         .theme-terminal { --bg-color: #000000; --text-color: #00ff00; --header-bg: #0a0a0a; --header-text: #00ff00; --panel-border: #003300; --editor-bg: #000000; --preview-bg: #000000; --code-bg: #111; --link-color: #00ffff; --editor-font: 'Monospace', 'Courier New'; --status-bg: #000; }
         .theme-highcontrast { --bg-color: #ffffff; --text-color: #000000; --header-bg: #000000; --header-text: #ffffff; --panel-border: #000000; --editor-bg: #ffffff; --preview-bg: #ffffff; --code-bg: #e0e0e0; --link-color: #0000ff; --status-bg: #000; }
         .theme-solarized { --bg-color: #fdf6e3; --text-color: #586e75; --header-bg: #eee8d5; --header-text: #586e75; --panel-border: #eee8d5; --editor-bg: #fdf6e3; --preview-bg: #fdf6e3; --code-bg: #eee8d5; --link-color: #268bd2; --status-bg: #eee8d5; --status-text: #586e75; }
         .theme-solarized-dark { --bg-color: #002b36; --text-color: #839496; --header-bg: #073642; --header-text: #839496; --panel-border: #073642; --editor-bg: #002b36; --preview-bg: #002b36; --code-bg: #073642; --link-color: #268bd2; --status-bg: #073642; }
-        .theme-newspaper { --bg-color: #fcfcf4; --text-color: #1a1a1a; --header-bg: #222; --header-text: #fff; --panel-border: #aaa; --editor-bg: #ffffff; --preview-bg: #ffffff; --code-bg: #f0f0f0; --font-family: 'Lora', serif; --link-color: #800000; --status-bg: #222; }
+        .theme-newspaper { --bg-color: #fcfcf4; --text-color: #1a1a1a; --header-bg: #222; --header-text: #fff; --panel-border: #aaa; --editor-bg: #ffffff; --preview-bg: #ffffff; --code-bg: #f0f0f0; --content-font: 'Lora', serif; --link-color: #800000; --status-bg: #222; }
 
         /* --- Global Layout and Controls --- */
-        body { display: flex; flex-direction: column; margin: 0; height: 100vh; font-family: var(--font-family); background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; }
-        header { background-color: var(--header-bg); color: var(--header-text); padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); flex-shrink: 0; }
+        body { display: flex; flex-direction: column; margin: 0; height: 100vh; font-family: var(--content-font); background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; transition: background-color 0.3s, color 0.3s; }
+        header { background-color: var(--header-bg); color: var(--header-text); padding: 8px 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); flex-shrink: 0; }
         
-        /* Dropdown/Button Styling */
-        header select, header button { padding: 5px 10px; margin-left: 10px; border: none; border-radius: 3px; cursor: pointer; background-color: rgba(255, 255, 255, 0.15); color: var(--header-text); transition: background-color 0.1s; }
+        /* Control Group Styling */
+        .control-group { display: flex; align-items: center; gap: 5px; }
+
+        /* Button/Dropdown Styling */
+        header select, header button { padding: 5px 10px; border: none; border-radius: 3px; cursor: pointer; background-color: rgba(255, 255, 255, 0.15); color: var(--header-text); transition: background-color 0.1s; font-size: 14px; }
         header button:hover, header select:hover { background-color: rgba(255, 255, 255, 0.3); }
         header select { color: #333; background-color: #fff; }
         header select option { background-color: #fff; color: #333; }
+        
+        /* Special Button for Markdown Tags */
+        .markdown-control { font-weight: bold; padding: 5px 8px; }
+        
+        /* Custom Color Pickers */
+        .color-picker-label { margin-left: 10px; color: var(--header-text); font-size: 13px; display: flex; align-items: center; gap: 5px; }
+        .color-picker-label input[type="color"] { border: none; padding: 0; width: 25px; height: 25px; background: none; cursor: pointer; }
         
         /* File Name Input */
         #file-name-input { 
@@ -67,77 +74,227 @@
             color: var(--header-text); 
             font-weight: bold; 
             font-size: 18px;
-            margin-left: 10px;
+            margin-right: 20px;
             padding: 2px 5px;
             width: 250px;
         }
+
+        /* --- FIX: Switch to Dual Scrollbar Layout --- */
+        main { 
+            display: flex; 
+            flex-grow: 1; 
+            overflow-y: hidden; /* Main no longer scrolls */
+            overflow-x: hidden;
+            height: 100%; 
+        }
+
+        .panel { 
+            flex: 1; 
+            padding: 0; 
+            box-sizing: border-box; 
+            min-width: 0;
+            height: 100%; /* Ensures panel fills main height */
+            overflow-y: auto; /* <-- NEW: Panels are now independently scrollable */
+            position: relative; 
+        } 
+
+        /* 3. Editor/Preview Styles (Re-adding padding now that it's not on the panel) */
+        #editor { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            resize: none; 
+            font-family: var(--editor-font); 
+            font-size: 15px; 
+            line-height: 1.6; 
+            outline: none; 
+            padding: 15px; /* Added padding back to the textarea */
+            box-sizing: border-box; 
+            overflow: auto; /* Allow internal scroll within textarea if needed, though parent panel handles it */
+            
+            background-color: var(--editor-bg); 
+            color: var(--text-color); 
+            caret-color: var(--link-color); 
+            
+            /* Remove height/width block from JS and rely on CSS */
+            display: block; 
+        }
+
+        /* We also need to ensure its parent container respects the flex boundaries. */
+        #editor-container { 
+            border-right: 1px solid var(--panel-border); 
+            background-color: var(--editor-bg);
+            padding: 0; /* Removed padding from container */
+        }
+        #preview { 
+            background-color: var(--preview-bg); 
+            font-family: var(--content-font); 
+            padding: 15px; 
+        }
         
-        /* PDF Status Indicator */
-        #pdf-status { color: #ffeb3b; margin-left: 15px; font-weight: bold; }
-
-        /* Main Split View */
-        main { display: flex; flex-grow: 1; overflow: hidden; }
-        .panel { flex: 1; padding: 15px; overflow-y: scroll; box-sizing: border-box; height: 100%; position: relative; } 
-
-        /* Editor/Preview Styles */
-        #editor-container { border-right: 1px solid var(--panel-border); background-color: var(--editor-bg); }
-        #editor { width: 100%; height: 100%; border: none; resize: none; font-family: var(--editor-font); font-size: 15px; line-height: 1.6; outline: none; padding: 0; background-color: var(--editor-bg); color: var(--text-color); }
-        #preview { background-color: var(--preview-bg); }
-        #preview h1, #preview h2 { color: var(--link-color); border-bottom: 1px solid var(--panel-border); padding-bottom: 5px; margin-top: 1.5em; }
-        #preview pre { background-color: var(--code-bg); padding: 10px; border-radius: 4px; overflow-x: auto; }
-        #preview blockquote { border-left: 5px solid var(--link-color); padding-left: 15px; margin: 15px 0; opacity: 0.85; font-style: italic; }
-        #preview table { width: 100%; border-collapse: collapse; margin: 1em 0; }
-        #preview th, #preview td { border: 1px solid var(--panel-border); padding: 8px 12px; text-align: left; }
+        /* Preview Styling for Accuracy and Beauty */
+        #preview h1, #preview h2, #preview h3, #preview h4 { color: var(--link-color); padding-bottom: 5px; margin-top: 1.5em; }
+        #preview h1 { font-size: 2em; border-bottom: 2px solid var(--panel-border); }
+        #preview h2 { font-size: 1.75em; border-bottom: 1px solid var(--panel-border); }
+        #preview p { margin-bottom: 0.5em; }
+        
+        #preview pre { background-color: var(--code-bg); padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.9em; }
+        #preview blockquote { border-left: 5px solid var(--link-color); padding: 10px 15px; margin: 15px 0; opacity: 0.85; font-style: italic; background-color: rgba(52, 152, 219, 0.05); }
+        
+        #preview table { width: 100%; border-collapse: collapse; margin: 1em 0; background-color: var(--editor-bg); }
+        #preview th, #preview td { border: 1px solid var(--panel-border); padding: 10px 12px; text-align: left; }
+        #preview th { background-color: var(--code-bg); font-weight: bold; }
+        
+        #preview ul, #preview ol { margin-left: 20px; padding-left: 0; }
+        
         .katex { color: var(--text-color); }
 
-        /* Status Bar */
+        /* Status Bar & Action Log */
         #status-bar {
             background-color: var(--status-bg);
             color: var(--status-text);
             padding: 5px 15px;
             font-size: 12px;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             gap: 20px;
             flex-shrink: 0;
         }
+        #action-log {
+            color: var(--action-log-color);
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
         
-        /* --- PRINT CSS (Hidden as PDF is now html2canvas-based, but kept for potential future use) --- */
+        /* --- PRINT CSS (For High Quality PDF Export) --- */
         @media print {
-            header, #editor-container, #status-bar, .controls, #pdf-status { display: none !important; }
+            header, #editor-container, #status-bar, .controls { display: none !important; }
             body, main { display: block !important; height: auto; margin: 0; padding: 0; background-color: #fff; color: #000; }
+            /* Panels are no longer flex children, so they need full width/visibility */
             .panel { flex: none !important; width: 100% !important; overflow: visible !important; box-sizing: border-box; padding: 1cm; }
-            #preview table, #preview pre, #preview img { page-break-inside: avoid; }
+            #preview { background-color: #fff !important; color: #000 !important; padding: 15px; } /* Ensure padding is kept for print */
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+
+        /* --- Responsive Adjustments for Tablets and Phones --- */
+        @media (max-width: 768px) {
+            /* 1. Main Layout: Stack panels vertically */
+            main {
+                flex-direction: column;
+            }
+
+            .panel {
+                /* Override flex: 1 for full width */
+                flex: none; 
+                width: 100%;
+                /* Allocate half of the viewport height to each panel */
+                height: 50vh; 
+                padding: 0; /* Panel container should have no padding */
+            }
+            
+            #editor {
+                padding: 10px; /* Adjust textarea padding for mobile */
+            }
+
+            #editor-container {
+                /* Remove the vertical border */
+                border-right: none;
+                /* Add a horizontal separator */
+                border-bottom: 1px solid var(--panel-border);
+            }
+            
+            /* 2. Header: Stack control groups */
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px;
+            }
+            
+            .control-group {
+                width: 100%;
+                margin-top: 5px;
+                flex-wrap: wrap; 
+                justify-content: flex-start;
+                gap: 8px;
+            }
+
+            #file-name-input {
+                width: 90%; 
+                margin-right: 0;
+                margin-bottom: 5px;
+                font-size: 16px;
+            }
+
+            /* Make buttons and select menus slightly smaller */
+            header select, header button {
+                font-size: 13px;
+                padding: 4px 8px;
+            }
+            
+            /* 3. Status Bar: Stack stats vertically on smaller screens */
+            #status-bar {
+                flex-direction: column;
+                gap: 5px;
+            }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div>
-            ZenWrite: 
+        <div class="control-group">
             <input type="text" id="file-name-input" value="My New Document">
         </div>
-        <div class="controls">
-            <!-- Theme Selection -->
-            <select id="theme-select" onchange="applyTheme(this.value)">
-                <option value="default">1. Default Light</option>
-                <option value="dark">2. Dark Mode</option>
-                <option value="sepia">3. Sepia Book</option>
-                <option value="academic">4. Academic Paper</option>
-                <option value="minimal">5. Minimal White</option>
-                <option value="ocean">6. Ocean Blue</option>
-                <option value="terminal">7. Green Terminal</option>
-                <option value="highcontrast">8. High Contrast</option>
-                <option value="solarized">9. Solarized Light</option>
-                <option value="solarized-dark">10. Solarized Dark</option>
+        
+        <!-- MARKDOWN EDITOR CONTROLS -->
+        <div class="control-group">
+            <button class="markdown-control" onclick="insertMarkdownTag('**','**', 'bold text')" title="Bold (Ctrl+B)">B</button>
+            <button class="markdown-control" onclick="insertMarkdownTag('*','*', 'italic text')" title="Italic (Ctrl+I)">_I_</button>
+            <button class="markdown-control" onclick="insertMarkdownTag('# ', '')" title="Header 1">H1</button>
+            <button class="markdown-control" onclick="insertMarkdownTag('- ', '\n')" title="Bullet List">List</button>
+            <button class="markdown-control" onclick="insertMarkdownTag('`','`', 'code')" title="Inline Code">Code</button>
+            <button class="markdown-control" onclick="insertMarkdownTag('```javascript\n', '\n```', 'console.log(\'Block\')')" title="Code Block">{}</button>
+            <button class="markdown-control" onclick="insertMarkdownTag('[','(http://link.com)', 'Link Text')" title="Insert Link">Link</button>
+        </div>
+        
+        <!-- THEME & FONT CUSTOMIZATION -->
+        <div class="control-group">
+            <select id="theme-select" onchange="applyTheme(this.value)" title="Choose a global color scheme">
+                <option value="default">Default Light</option>
+                <option value="dark">Dark Mode</option>
+                <option value="sepia">Sepia Book</option>
+                <option value="academic">Academic Paper</option>
+                <option value="minimal">Minimal White</option>
+                <option value="ocean">Ocean Blue</option>
+                <option value="terminal">Green Terminal</option>
+                <option value="highcontrast">High Contrast</option>
+                <option value="solarized">Solarized Light</option>
+                <option value="solarized-dark">Solarized Dark</option>
+                <option value="newspaper">Newspaper</option>
             </select>
 
-            <!-- Export Button (PDF option restored to use html2canvas) -->
+            <select id="font-select" onchange="applyFont(this.value)" title="Select Content Font Family">
+                <option value="Segoe UI">Sans-serif (Default)</option>
+                <option value="Times New Roman">Serif (Formal)</option>
+                <option value="Georgia">Georgia (Book)</option>
+                <option value="Monospace">Monospace (Code)</option>
+                <option value="Arial">Arial</option>
+                <option value="Verdana">Verdana</option>
+            </select>
+
+            <label class="color-picker-label" title="Custom Text Color">Txt
+                <input type="color" id="text-color-picker" onchange="applyCustomColors()">
+            </label>
+            <label class="color-picker-label" title="Custom Background Color">BG
+                <input type="color" id="bg-color-picker" onchange="applyCustomColors()">
+            </label>
+        </div>
+
+        <!-- EXPORT & IMPORT -->
+        <div class="control-group">
             <select id="export-select" onchange="handleExport(this.value)">
                 <option value="" disabled selected>Export (8 Formats)</option>
-                <option value="pdf">PDF (Image Based)</option>
+                <option value="pdf">High Quality PDF (via Print)</option>
                 <option value="md">Markdown (.md)</option>
                 <option value="html">HTML (.html)</option>
                 <option value="txt">Plain Text (.txt)</option>
@@ -146,21 +303,19 @@
                 <option value="xml">XML (As Tagged Text)</option>
                 <option value="yaml">YAML (As Key/Value)</option>
             </select>
-            <span id="pdf-status"></span>
 
-            <!-- Import Button -->
             <input type="file" id="file-upload" style="display: none;" onchange="handleImport(event)">
-            <button onclick="document.getElementById('file-upload').click()">Import File</button>
+            <button onclick="document.getElementById('file-upload').click()" title="Load file into editor">Import</button>
         </div>
     </header>
 
     <main>
-        <!-- Editor Panel -->
+        <!-- Editor Panel is now scrollable -->
         <div class="panel" id="editor-container">
             <textarea id="editor"></textarea>
         </div>
 
-        <!-- Preview Panel -->
+        <!-- Preview Panel is now scrollable -->
         <div class="panel" id="preview">
             <!-- Content injected by JavaScript -->
         </div>
@@ -168,87 +323,70 @@
     
     <!-- Status Bar -->
     <footer id="status-bar">
-        <span id="char-count">Characters: 0</span>
-        <span id="word-count">Words: 0</span>
-        <span id="line-count">Lines: 0</span>
+        <span id="action-log">Ready.</span>
+        <div>
+            <span id="char-count">Characters: 0</span>
+            <span id="word-count">Words: 0</span>
+            <span id="line-count">Lines: 0</span>
+        </div>
     </footer>
 
     <!-- Embedded JavaScript -->
     <script>
         const editor = document.getElementById('editor');
-        const editorContainer = document.getElementById('editor-container');
         const preview = document.getElementById('preview');
         const fileNameInput = document.getElementById('file-name-input');
-        const pdfStatus = document.getElementById('pdf-status');
+        const actionLog = document.getElementById('action-log');
+        const main = document.querySelector('main');
         
+        // Storage Keys
         const STORAGE_KEY = 'zenwrite_content';
         const FILENAME_KEY = 'zenwrite_filename';
         const THEME_KEY = 'zenwrite_theme';
+        const FONT_KEY = 'zenwrite_font';
+        const COLOR_TEXT_KEY = 'zenwrite_color_text';
+        const COLOR_BG_KEY = 'zenwrite_color_bg';
         
-        // Flags for refined bidirectional scroll sync
-        let isSyncingEditor = false;
-        let isSyncingPreview = false;
+        // --- Synchronization Flag ---
+        let isSyncing = false;
         
         // --- Initial Markdown Template ---
-        const WELCOME_TEMPLATE = `# Welcome to ZenWrite: Your Minimal Markdown Studio
+        const WELCOME_TEMPLATE = `# Welcome to ZenWrite: Fully Customizable Markdown Studio
 
-Start writing clean, structured documents instantly. ZenWrite provides a powerful, distraction-free environment with professional output capabilities.
+Start writing clean, structured documents instantly. Use the controls above to customize fonts, colors, and insert common markdown tags quickly.
 
-## ✨ Core Features at a Glance
+## ✨ Full Customization and Features
 
-### 1. Real-Time, Bidirectional Sync
+### 1. Theming, Fonts, and Colors
+Use the header controls to choose a preset theme, or override it instantly with custom colors and fonts.
 
-Type on the left, see the result instantly on the right. Scroll either panel, and the other will track perfectly:
-
-> This seamless synchronization ensures you always see exactly what your final output will look like.
-
-### 2. Professional Export Quality
-
-Export your content in high-quality formats suitable for production:
-
-*   **High Quality PDF:** Export via native print for perfect, vector-based text and intelligent page breaks.
-*   **Structured Data:** Extract your content as **JSON, YAML,** or **XML**.
-*   **Source:** Download your raw **Markdown (.md)** or **Plain Text (.txt)** files.
-
-### 3. Integrated Math and Code Support
-
-ZenWrite is built for technical documentation, supporting syntax highlighting and complex mathematical notation.
-
-#### Code Highlighting Example (Python)
-
-<pre>
-def check_document_status(lines, words, chars):
-    """Calculates status metrics in real-time."""
-    if words > 500:
-        return "Draft Ready"
-    else:
-        return "In Progress"
-
-print(check_document_status(10, 150, 800))
-</pre>
-
-#### Mathematical Notation (KaTeX)
-
-You can write complex equations like the Fourier Series expansion $f(x) = \sum_{n=-\infty}^\infty c_n e^{i n x}$ or display them centered:
-
+### 2. Precise Math Rendering (KaTeX)
+ZenWrite handles complex technical notation with ease.
+$$ 
+\mathbf{E} = \frac{1}{4\pi\varepsilon_0} \sum_{i=1}^n \frac{q_i}{|\mathbf{r}-\mathbf{r}_i|^2} \hat{\mathbf{r}}_i
 $$
-\int_{0}^{\pi} \sin^2(x) dx = \frac{\pi}{2}
-$$
+The equation $a^2 + b^2 = c^2$ is rendered inline.
 
-### 4. Structure and Theming
+### 3. High Quality Export
+The **High Quality PDF (via Print)** option uses your browser's native print engine for perfect, scalable output.
 
-Use headers, lists, and tables to organize your thoughts:
+| Feature | Custom | Optimized |
+| :--- | :---: | :---: |
+| Fonts | ✅ | ✅ |
+| Colors | ✅ | ✅ |
+| Scroll Sync | ✅ | ✅ |
 
-| Component | Status | Theme Support |
-| :--- | :--- | :--- |
-| Editor | Live Input | Yes (10 options) |
-| Preview | Real-Time | Yes (10 options) |
-| Status Bar | Active | Yes |
+### 4. Code Blocks
+We support full syntax highlighting for various languages:
 
-*   Experiment with the **Theme Selector** in the top bar to find your perfect writing environment.
-*   The footer shows **live counts** of your characters, words, and lines.
-
-Enjoy writing!
+\`\`\`javascript
+function calculate_score(team_data) {
+    // Action: Score calculated
+    logAction('Data analysis started.');
+    const total = team_data.reduce((sum, player) => sum + player.score, 0);
+    return total;
+}
+\`\`\`
 `;
         
         // --- Marked & KaTeX Configuration ---
@@ -261,26 +399,70 @@ Enjoy writing!
             },
             gfm: true,
             breaks: true,
-            sanitize: true,
         });
 
         // --- Core Functions ---
 
+        function logAction(message) {
+            console.log(`[ZenWrite Action] ${message}`);
+            actionLog.textContent = message;
+            actionLog.style.opacity = 1;
+            
+            // Clear the status message after 2.5 seconds
+            clearTimeout(window.logTimeout);
+            window.logTimeout = setTimeout(() => {
+                actionLog.style.opacity = 0;
+            }, 2500);
+        }
+
+        /**
+         * Implements the proportional scroll synchronization between two panels.
+         * @param {HTMLElement} source - The panel that was just scrolled.
+         * @param {HTMLElement} target - The panel that needs to be synchronized.
+         */
+        function syncScroll(source, target) {
+            if (isSyncing) return;
+            isSyncing = true;
+
+            // Calculate proportional scroll position
+            const maxSourceScroll = source.scrollHeight - source.clientHeight;
+            if (maxSourceScroll > 0) {
+                const scrollRatio = source.scrollTop / maxSourceScroll;
+                
+                // Apply the same ratio to the target panel
+                const maxTargetScroll = target.scrollHeight - target.clientHeight;
+                target.scrollTop = scrollRatio * maxTargetScroll;
+            }
+
+            // Debounce the flag
+            requestAnimationFrame(() => {
+                isSyncing = false;
+            });
+        }
+        
+        let editorContentLength = 0; 
+
         function updatePreview() {
             const markdown = editor.value;
-            const html = marked.parse(markdown);
-            
-            preview.innerHTML = html;
+            editorContentLength = markdown.length; 
+            try {
+                const html = marked.parse(markdown);
+                preview.innerHTML = html;
 
-            // Render KaTeX
-            if (window.renderMathInElement) {
-                renderMathInElement(preview, {
-                    delimiters: [
-                        { left: '$$', right: '$$', display: true },
-                        { left: '$', right: '$', display: false },
-                    ],
-                    throwOnError: false
-                });
+                // Render KaTeX
+                if (window.renderMathInElement) {
+                    renderMathInElement(preview, {
+                        delimiters: [
+                            { left: '$$', right: '$$', display: true },
+                            { left: '$', right: '$', display: false },
+                        ],
+                        throwOnError: false
+                    });
+                }
+                logAction('Document rendered.');
+            } catch (e) {
+                preview.innerHTML = `<p style="color: red;">Markdown Rendering Error: ${e.message}</p>`;
+                logAction('Rendering failed due to error.');
             }
             
             updateStatus(markdown);
@@ -301,6 +483,8 @@ Enjoy writing!
             localStorage.setItem(STORAGE_KEY, editor.value);
             localStorage.setItem(FILENAME_KEY, fileNameInput.value);
         }
+        
+        // --- Customization Functions ---
 
         function applyTheme(themeName) {
             document.body.className = ''; 
@@ -308,38 +492,88 @@ Enjoy writing!
                 document.body.classList.add(`theme-${themeName}`);
             }
             localStorage.setItem(THEME_KEY, themeName);
+            logAction(`Theme set to ${themeName}.`);
+            loadCustomColors(); 
             updatePreview(); 
         }
 
-        // --- REFINED BIDIRECTIONAL SCROLL SYNCHRONIZATION V5 ---
-
-        function syncScroll(source, target, isSourceEditor) {
-            if (isSourceEditor) {
-                if (isSyncingPreview) return;
-                isSyncingEditor = true;
-            } else {
-                if (isSyncingEditor) return;
-                isSyncingPreview = true;
-            }
-
-            const sourceScrollableHeight = source.scrollHeight - source.clientHeight;
-            const targetScrollableHeight = target.scrollHeight - target.clientHeight;
-            
-            if (sourceScrollableHeight <= 0 || targetScrollableHeight <= 0) {
-                if (isSourceEditor) isSyncingEditor = false;
-                else isSyncingPreview = false;
-                return;
-            }
-
-            const percentage = source.scrollTop / sourceScrollableHeight;
-            target.scrollTop = percentage * targetScrollableHeight;
-            
-            // Clear flags after a short, optimized delay (30ms)
-            setTimeout(() => { 
-                if (isSourceEditor) isSyncingEditor = false;
-                else isSyncingPreview = false;
-            }, 30); 
+        function applyFont(font) {
+            document.documentElement.style.setProperty('--content-font', font);
+            localStorage.setItem(FONT_KEY, font);
+            logAction(`Font family set to ${font}.`);
+            updatePreview();
         }
+
+        function applyCustomColors() {
+            const textColor = document.getElementById('text-color-picker').value;
+            const bgColor = document.getElementById('bg-color-picker').value;
+
+            document.documentElement.style.setProperty('--text-color', textColor);
+            document.documentElement.style.setProperty('--bg-color', bgColor);
+            document.documentElement.style.setProperty('--editor-bg', bgColor);
+            document.documentElement.style.setProperty('--preview-bg', bgColor);
+
+            localStorage.setItem(COLOR_TEXT_KEY, textColor);
+            localStorage.setItem(COLOR_BG_KEY, bgColor);
+            logAction(`Custom colors applied.`);
+        }
+
+        function loadCustomColors() {
+            const savedText = localStorage.getItem(COLOR_TEXT_KEY);
+            const savedBg = localStorage.getItem(COLOR_BG_KEY);
+
+            if (savedText) {
+                document.getElementById('text-color-picker').value = savedText;
+                document.documentElement.style.setProperty('--text-color', savedText);
+            }
+            if (savedBg) {
+                document.getElementById('bg-color-picker').value = savedBg;
+                document.documentElement.style.setProperty('--bg-color', savedBg);
+                document.documentElement.style.setProperty('--editor-bg', savedBg);
+                document.documentElement.style.setProperty('--preview-bg', savedBg);
+            }
+        }
+        
+        // --- Markdown Insertion Helper ---
+
+        function insertMarkdownTag(startTag, endTag = '', defaultText = '') {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const selectedText = editor.value.substring(start, end);
+            
+            let replacement = selectedText.length > 0
+                ? `${startTag}${selectedText}${endTag}`
+                : `${startTag}${defaultText}${endTag}`;
+
+            editor.value = editor.value.substring(0, start) + replacement + editor.value.substring(end);
+
+            editor.focus();
+            
+            let newCursorPos = start + startTag.length + (selectedText.length > 0 ? selectedText.length : defaultText.length);
+            
+            if (startTag.endsWith('\n')) {
+                newCursorPos = start + replacement.length;
+            }
+            
+            editor.selectionStart = newCursorPos;
+            editor.selectionEnd = newCursorPos;
+            
+            updatePreview();
+            logAction(`Inserted markdown tag: ${startTag.trim()}`);
+        }
+
+        // --- Keyboard Shortcuts ---
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'b') {
+                    e.preventDefault();
+                    insertMarkdownTag('**','**', 'bold text');
+                } else if (e.key === 'i') {
+                    e.preventDefault();
+                    insertMarkdownTag('*','*', 'italic text');
+                }
+            }
+        });
 
         // --- File I/O Functions ---
 
@@ -352,6 +586,7 @@ Enjoy writing!
                 editor.value = e.target.result;
                 fileNameInput.value = file.name.replace(/\.[^/.]+$/, "");
                 updatePreview();
+                logAction(`File imported: ${file.name}`);
             };
             reader.readAsText(file);
         }
@@ -363,9 +598,8 @@ Enjoy writing!
 
             switch (format) {
                 case 'pdf':
-                    pdfStatus.textContent = "Processing PDF (takes time)...";
-                    // Delay to ensure status update is visible
-                    setTimeout(() => exportToPDF(filename), 50);
+                    logAction("Exporting PDF via native print dialog...");
+                    window.print();
                     break;
                 case 'md':
                 case 'txt':
@@ -384,33 +618,57 @@ Enjoy writing!
             let exportData = content;
             let mimeType = 'text/plain';
 
-            switch (format) {
-                case 'md':
-                    mimeType = 'text/markdown';
-                    break;
-                case 'csv':
-                    mimeType = 'text/csv';
-                    break;
-                case 'json':
-                    exportData = JSON.stringify({ filename: filename, markdown: content }, null, 2);
-                    mimeType = 'application/json';
-                    break;
-                case 'xml':
-                    exportData = `<document title="${filename}"><markdown><![CDATA[${content}]]></markdown></document>`;
-                    mimeType = 'application/xml';
-                    break;
-                case 'yaml':
-                    exportData = `filename: ${filename}\nmarkdown_content: | \n  ${content.replace(/\n/g, '\n  ')}`;
-                    mimeType = 'application/x-yaml';
-                    break;
-                case 'html':
-                    // Generates standalone HTML file of the rendered preview
-                    const styleContent = document.querySelector('style').innerHTML;
-                    exportData = `<!DOCTYPE html><html><head><title>${filename}</title><style>${styleContent}</style></head><body class="${document.body.className}" style="margin: 20px;">${preview.innerHTML}</body></html>`;
-                    mimeType = 'text/html';
-                    break;
+            try {
+                switch (format) {
+                    case 'md':
+                        mimeType = 'text/markdown';
+                        break;
+                    case 'csv':
+                        // Simple table extraction (very basic attempt based on preview content)
+                        const tables = preview.querySelectorAll('table');
+                        if (tables.length > 0) {
+                            exportData = Array.from(tables).map(table => {
+                                let csvContent = [];
+                                table.querySelectorAll('tr').forEach(row => {
+                                    const rowData = Array.from(row.querySelectorAll('th, td')).map(cell => `"${cell.textContent.replace(/"/g, '""')}"`);
+                                    csvContent.push(rowData.join(','));
+                                });
+                                return csvContent.join('\n');
+                            }).join('\n\n--- TABLE BREAK ---\n\n');
+                        } else {
+                            exportData = "No tables found to extract as CSV.";
+                        }
+                        mimeType = 'text/csv';
+                        break;
+                    case 'json':
+                        exportData = JSON.stringify({ filename: filename, markdown: content, html_preview: preview.innerHTML }, null, 2);
+                        mimeType = 'application/json';
+                        break;
+                    case 'xml':
+                        exportData = `<document title="${filename}"><markdown><![CDATA[${content}]]></markdown><html-preview><![CDATA[${preview.innerHTML}]]></html-preview></document>`;
+                        mimeType = 'application/xml';
+                        break;
+                    case 'yaml':
+                        exportData = `
+filename: ${filename}
+word_count: ${document.getElementById('word-count').textContent.split(': ')[1]}
+markdown_content: |
+  ${content.replace(/\n/g, '\n  ')}`;
+                        mimeType = 'application/x-yaml';
+                        break;
+                    case 'html':
+                        // Generates standalone HTML file of the rendered preview
+                        const styleContent = document.querySelector('style').innerHTML;
+                        const contentFont = document.documentElement.style.getPropertyValue('--content-font') || 'var(--content-font)';
+                        exportData = `<!DOCTYPE html><html><head><title>${filename}</title><style>body { font-family: ${contentFont}; }</style><style>${styleContent}</style></head><body class="${document.body.className}" style="margin: 20px; color: ${document.documentElement.style.getPropertyValue('--text-color')}; background-color: ${document.documentElement.style.getPropertyValue('--bg-color')};">${preview.innerHTML}</body></html>`;
+                        mimeType = 'text/html';
+                        break;
+                }
+                downloadFile(`${filename}.${format}`, exportData, mimeType);
+                logAction(`Exported successfully as .${format}`);
+            } catch (e) {
+                logAction(`Export failed for ${format}. Error: ${e.message}`);
             }
-            downloadFile(`${filename}.${format}`, exportData, mimeType);
         }
 
 
@@ -425,46 +683,6 @@ Enjoy writing!
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
-
-        // --- PDF Generation with html2canvas (Image-Based) ---
-        function exportToPDF(filename) {
-            const { jsPDF } = window.jspdf;
-            const html2canvas = window.html2canvas;
-
-            if (!jsPDF || !html2canvas) {
-                pdfStatus.textContent = "Error: PDF library missing.";
-                console.error("PDF Generation Error: Required libraries failed to load.");
-                return;
-            }
-            
-            const doc = new jsPDF('p', 'pt', 'a4');
-            const element = preview; 
-
-            // Use the full width of the rendered content, not the viewport width
-            const printWidth = element.scrollWidth > 580 ? element.scrollWidth : 580;
-
-            doc.html(element, {
-                callback: function (doc) {
-                    doc.save(`${filename}.pdf`);
-                    pdfStatus.textContent = "PDF Ready!";
-                    setTimeout(() => pdfStatus.textContent = "", 2000); // Clear status
-                },
-                x: 10,
-                y: 10,
-                html2canvas: {
-                    scale: 0.6, // Adjusted scale for balance between size and quality
-                    logging: false,
-                    useCORS: true
-                },
-                windowWidth: printWidth,
-                width: 580 // A4 size approximation
-            }).catch(error => {
-                pdfStatus.textContent = "PDF Error!";
-                console.error("PDF Generation failed:", error);
-                setTimeout(() => pdfStatus.textContent = "", 2000);
-            });
-        }
-
 
         // --- Initialization ---
 
@@ -485,15 +703,27 @@ Enjoy writing!
             if (themeSelect.querySelector(`option[value="${savedTheme}"]`)) {
                 themeSelect.value = savedTheme;
             }
-            applyTheme(themeSelect.value); // Initial preview update is inside applyTheme
+            applyTheme(themeSelect.value); 
+            
+            // 4. Load font
+            const savedFont = localStorage.getItem(FONT_KEY) || 'Segoe UI';
+            const fontSelect = document.getElementById('font-select');
+            if (fontSelect.querySelector(`option[value="${savedFont}"]`)) {
+                fontSelect.value = savedFont;
+            }
+            applyFont(savedFont);
 
-            // 4. Setup Real-time input listener (FIXED)
+            // 5. Setup Real-time input listener
             editor.addEventListener('input', updatePreview);
 
-            // 5. Set up event listeners for scroll sync
-            editorContainer.addEventListener('scroll', () => syncScroll(editorContainer, preview, true));
-            preview.addEventListener('scroll', () => syncScroll(preview, editorContainer, false));
+            // 6. Setup scroll sync listeners (FIXED to target editor and preview directly)
+            editor.addEventListener('scroll', () => syncScroll(editor, preview));
+            preview.addEventListener('scroll', () => syncScroll(preview, editor));
 
+            // Initial render
+            updatePreview();
+
+            logAction('ZenWrite loaded successfully. Scroll sync is active.');
         }
 
         initializeApp();
@@ -501,10 +731,5 @@ Enjoy writing!
 
 </body>
 </html>
-
------------------------------------------------------
-
-do the following : 
-Removed jsPDF and html2canvas dependencies. The export option is renamed to "High Quality PDF (via Print)".
-Remove the theme numbering that is there in the theme dropdown. Add more at all the possible markdown editor controls. And I need more precise action tracking in the website. And yeah, I want this website to be able to render any kind of markdown without mistake, with full accuracy and in a completely beautiful manner. I want fully customizability in this website. I want this markdown editor to be optimum and have all the settings or features that a markdown editor should have in it, included. And I want an option there to choose from various types of fonts as well, and colors as well.
-send me the full copy paste ready code for me to test.
+------------------------------------------------
+the print is not printing all the content. i've sent you the image showing how it looks. fix it.

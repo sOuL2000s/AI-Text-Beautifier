@@ -29,7 +29,7 @@
             --code-bg: #f4f4f4;
             --link-color: #3498db;
             --editor-font: 'Consolas', 'Monospace';
-            --content-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* New variable for content font */
+            --content-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             --status-bg: #333;
             --status-text: #fff;
             --action-log-color: #ffeb3b;
@@ -79,12 +79,26 @@
             width: 250px;
         }
 
-        /* Main Split View */
-        main { display: flex; flex-grow: 1; overflow: hidden; }
-        .panel { flex: 1; padding: 15px; overflow-y: scroll; box-sizing: border-box; height: 100%; position: relative; } 
+        /* --- FIX: Switch to Dual Scrollbar Layout --- */
+        main { 
+            display: flex; 
+            flex-grow: 1; 
+            overflow-y: hidden; /* Main no longer scrolls */
+            overflow-x: hidden;
+            height: 100%; 
+        }
 
-        /* Editor/Preview Styles */
-        #editor-container { border-right: 1px solid var(--panel-border); background-color: var(--editor-bg); }
+        .panel { 
+            flex: 1; 
+            padding: 0; 
+            box-sizing: border-box; 
+            min-width: 0;
+            height: 100%; /* Ensures panel fills main height */
+            overflow-y: auto; /* <-- NEW: Panels are now independently scrollable */
+            position: relative; 
+        } 
+
+        /* 3. Editor/Preview Styles (Re-adding padding now that it's not on the panel) */
         #editor { 
             width: 100%; 
             height: 100%; 
@@ -94,18 +108,35 @@
             font-size: 15px; 
             line-height: 1.6; 
             outline: none; 
-            padding: 0; 
+            padding: 15px; /* Added padding back to the textarea */
+            box-sizing: border-box; 
+            overflow: auto; /* Allow internal scroll within textarea if needed, though parent panel handles it */
+            
             background-color: var(--editor-bg); 
             color: var(--text-color); 
-            caret-color: var(--link-color); /* Improve visibility of cursor */
+            caret-color: var(--link-color); 
+            
+            /* Remove height/width block from JS and rely on CSS */
+            display: block; 
         }
-        #preview { background-color: var(--preview-bg); font-family: var(--content-font); }
+
+        /* We also need to ensure its parent container respects the flex boundaries. */
+        #editor-container { 
+            border-right: 1px solid var(--panel-border); 
+            background-color: var(--editor-bg);
+            padding: 0; /* Removed padding from container */
+        }
+        #preview { 
+            background-color: var(--preview-bg); 
+            font-family: var(--content-font); 
+            padding: 15px; 
+        }
         
         /* Preview Styling for Accuracy and Beauty */
         #preview h1, #preview h2, #preview h3, #preview h4 { color: var(--link-color); padding-bottom: 5px; margin-top: 1.5em; }
         #preview h1 { font-size: 2em; border-bottom: 2px solid var(--panel-border); }
         #preview h2 { font-size: 1.75em; border-bottom: 1px solid var(--panel-border); }
-        #preview p { margin-bottom: 1em; }
+        #preview p { margin-bottom: 0.5em; }
         
         #preview pre { background-color: var(--code-bg); padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.9em; }
         #preview blockquote { border-left: 5px solid var(--link-color); padding: 10px 15px; margin: 15px 0; opacity: 0.85; font-style: italic; background-color: rgba(52, 152, 219, 0.05); }
@@ -138,12 +169,96 @@
         /* --- PRINT CSS (For High Quality PDF Export) --- */
         @media print {
             header, #editor-container, #status-bar, .controls { display: none !important; }
-            body, main { display: block !important; height: auto; margin: 0; padding: 0; background-color: #fff; color: #000; }
-            .panel { flex: none !important; width: 100% !important; overflow: visible !important; box-sizing: border-box; padding: 1cm; }
-            #preview { background-color: #fff !important; color: #000 !important; }
-            #preview table, #preview pre, #preview img { page-break-inside: avoid; }
-            #preview pre { background-color: #f0f0f0 !important; }
+            
+            body, main { 
+                display: block !important; 
+                height: auto !important; /* FIX: Crucial to allow body/main to expand */
+                margin: 0; 
+                padding: 0; 
+                background-color: #fff; 
+                color: #000; 
+            }
+            
+            /* Ensure the content panel expands fully without height constraints */
+            .panel { 
+                flex: none !important; 
+                width: 100% !important; 
+                height: auto !important; /* FIX: Remove fixed screen height constraint */
+                min-height: auto !important;
+                overflow: visible !important; /* Ensure content is not clipped */
+                box-sizing: border-box; 
+                padding: 0; 
+            }
+
+            #preview { 
+                background-color: #fff !important; 
+                color: #000 !important; 
+                padding: 1cm; /* Set professional print margins */
+            } 
+            
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+
+        /* --- Responsive Adjustments for Tablets and Phones --- */
+        @media (max-width: 768px) {
+            /* 1. Main Layout: Stack panels vertically */
+            main {
+                flex-direction: column;
+            }
+
+            .panel {
+                /* Override flex: 1 for full width */
+                flex: none; 
+                width: 100%;
+                /* Allocate half of the viewport height to each panel */
+                height: 50vh; 
+                padding: 0; /* Panel container should have no padding */
+            }
+            
+            #editor {
+                padding: 10px; /* Adjust textarea padding for mobile */
+            }
+
+            #editor-container {
+                /* Remove the vertical border */
+                border-right: none;
+                /* Add a horizontal separator */
+                border-bottom: 1px solid var(--panel-border);
+            }
+            
+            /* 2. Header: Stack control groups */
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px;
+            }
+            
+            .control-group {
+                width: 100%;
+                margin-top: 5px;
+                flex-wrap: wrap; 
+                justify-content: flex-start;
+                gap: 8px;
+            }
+
+            #file-name-input {
+                width: 90%; 
+                margin-right: 0;
+                margin-bottom: 5px;
+                font-size: 16px;
+            }
+
+            /* Make buttons and select menus slightly smaller */
+            header select, header button {
+                font-size: 13px;
+                padding: 4px 8px;
+            }
+            
+            /* 3. Status Bar: Stack stats vertically on smaller screens */
+            #status-bar {
+                flex-direction: column;
+                gap: 5px;
+            }
         }
     </style>
 </head>
@@ -218,12 +333,12 @@
     </header>
 
     <main>
-        <!-- Editor Panel -->
+        <!-- Editor Panel is now scrollable -->
         <div class="panel" id="editor-container">
             <textarea id="editor"></textarea>
         </div>
 
-        <!-- Preview Panel -->
+        <!-- Preview Panel is now scrollable -->
         <div class="panel" id="preview">
             <!-- Content injected by JavaScript -->
         </div>
@@ -242,10 +357,10 @@
     <!-- Embedded JavaScript -->
     <script>
         const editor = document.getElementById('editor');
-        const editorContainer = document.getElementById('editor-container');
         const preview = document.getElementById('preview');
         const fileNameInput = document.getElementById('file-name-input');
         const actionLog = document.getElementById('action-log');
+        const main = document.querySelector('main');
         
         // Storage Keys
         const STORAGE_KEY = 'zenwrite_content';
@@ -255,8 +370,8 @@
         const COLOR_TEXT_KEY = 'zenwrite_color_text';
         const COLOR_BG_KEY = 'zenwrite_color_bg';
         
-        let isSyncingEditor = false;
-        let isSyncingPreview = false;
+        // --- Synchronization Flag ---
+        let isSyncing = false;
         
         // --- Initial Markdown Template ---
         const WELCOME_TEMPLATE = `# Welcome to ZenWrite: Fully Customizable Markdown Studio
@@ -307,7 +422,6 @@ function calculate_score(team_data) {
             },
             gfm: true,
             breaks: true,
-            // sanitize: true, // Keep sanitize false to allow custom HTML if needed, but the user requested perfection, so we rely on marked's default output cleanliness.
         });
 
         // --- Core Functions ---
@@ -324,8 +438,36 @@ function calculate_score(team_data) {
             }, 2500);
         }
 
+        /**
+         * Implements the proportional scroll synchronization between two panels.
+         * @param {HTMLElement} source - The panel that was just scrolled.
+         * @param {HTMLElement} target - The panel that needs to be synchronized.
+         */
+        function syncScroll(source, target) {
+            if (isSyncing) return;
+            isSyncing = true;
+
+            // Calculate proportional scroll position
+            const maxSourceScroll = source.scrollHeight - source.clientHeight;
+            if (maxSourceScroll > 0) {
+                const scrollRatio = source.scrollTop / maxSourceScroll;
+                
+                // Apply the same ratio to the target panel
+                const maxTargetScroll = target.scrollHeight - target.clientHeight;
+                target.scrollTop = scrollRatio * maxTargetScroll;
+            }
+
+            // Debounce the flag
+            requestAnimationFrame(() => {
+                isSyncing = false;
+            });
+        }
+        
+        let editorContentLength = 0; 
+
         function updatePreview() {
             const markdown = editor.value;
+            editorContentLength = markdown.length; 
             try {
                 const html = marked.parse(markdown);
                 preview.innerHTML = html;
@@ -374,7 +516,6 @@ function calculate_score(team_data) {
             }
             localStorage.setItem(THEME_KEY, themeName);
             logAction(`Theme set to ${themeName}.`);
-            // Ensure custom colors (if set) override theme colors immediately
             loadCustomColors(); 
             updatePreview(); 
         }
@@ -429,13 +570,11 @@ function calculate_score(team_data) {
 
             editor.value = editor.value.substring(0, start) + replacement + editor.value.substring(end);
 
-            // Re-select the inserted text/area
             editor.focus();
             
             let newCursorPos = start + startTag.length + (selectedText.length > 0 ? selectedText.length : defaultText.length);
             
             if (startTag.endsWith('\n')) {
-                // If it's a block tag (like list or code block), move cursor to the end
                 newCursorPos = start + replacement.length;
             }
             
@@ -446,7 +585,7 @@ function calculate_score(team_data) {
             logAction(`Inserted markdown tag: ${startTag.trim()}`);
         }
 
-        // --- Keyboard Shortcuts (Optional Enhancement) ---
+        // --- Keyboard Shortcuts ---
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey || e.metaKey) {
                 if (e.key === 'b') {
@@ -458,36 +597,6 @@ function calculate_score(team_data) {
                 }
             }
         });
-
-
-        // --- Scroll Synchronization V5 ---
-
-        function syncScroll(source, target, isSourceEditor) {
-            if (isSourceEditor) {
-                if (isSyncingPreview) return;
-                isSyncingEditor = true;
-            } else {
-                if (isSyncingEditor) return;
-                isSyncingPreview = true;
-            }
-
-            const sourceScrollableHeight = source.scrollHeight - source.clientHeight;
-            const targetScrollableHeight = target.scrollHeight - target.clientHeight;
-            
-            if (sourceScrollableHeight <= 0 || targetScrollableHeight <= 0) {
-                if (isSourceEditor) isSyncingEditor = false;
-                else isSyncingPreview = false;
-                return;
-            }
-
-            const percentage = source.scrollTop / sourceScrollableHeight;
-            target.scrollTop = percentage * targetScrollableHeight;
-            
-            setTimeout(() => { 
-                if (isSourceEditor) isSyncingEditor = false;
-                else isSyncingPreview = false;
-            }, 30); 
-        }
 
         // --- File I/O Functions ---
 
@@ -617,10 +726,9 @@ markdown_content: |
             if (themeSelect.querySelector(`option[value="${savedTheme}"]`)) {
                 themeSelect.value = savedTheme;
             }
-            // Apply theme, which also calls updatePreview and handles color loading
             applyTheme(themeSelect.value); 
             
-            // 4. Load font (Must be done after theme, but before the final preview refresh)
+            // 4. Load font
             const savedFont = localStorage.getItem(FONT_KEY) || 'Segoe UI';
             const fontSelect = document.getElementById('font-select');
             if (fontSelect.querySelector(`option[value="${savedFont}"]`)) {
@@ -631,11 +739,14 @@ markdown_content: |
             // 5. Setup Real-time input listener
             editor.addEventListener('input', updatePreview);
 
-            // 6. Set up event listeners for scroll sync
-            editorContainer.addEventListener('scroll', () => syncScroll(editorContainer, preview, true));
-            preview.addEventListener('scroll', () => syncScroll(preview, editorContainer, false));
+            // 6. Setup scroll sync listeners (FIXED to target editor and preview directly)
+            editor.addEventListener('scroll', () => syncScroll(editor, preview));
+            preview.addEventListener('scroll', () => syncScroll(preview, editor));
 
-            logAction('ZenWrite loaded successfully.');
+            // Initial render
+            updatePreview();
+
+            logAction('ZenWrite loaded successfully. Scroll sync is active.');
         }
 
         initializeApp();

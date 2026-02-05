@@ -361,11 +361,14 @@ Start writing clean, structured documents instantly. Use the controls above to c
 Use the header controls to choose a preset theme, or override it instantly with custom colors and fonts.
 
 ### 2. Precise Math Rendering (KaTeX)
-ZenWrite handles complex technical notation with ease.
+ZenWrite handles complex technical notation with ease, supporting both standard Markdown \$\$...\$\$ and LaTeX delimiters.
+
+Display Math (\$\$...\$\$ or \\\[...\\\]):
 $$ 
 \mathbf{E} = \frac{1}{4\pi\varepsilon_0} \sum_{i=1}^n \frac{q_i}{|\mathbf{r}-\mathbf{r}_i|^2} \hat{\mathbf{r}}_i
 $$
-The equation $a^2 + b^2 = c^2$ is rendered inline.
+
+Inline Math (\$...\$ or \\(...\\)): The equation \\(a^2 + b^2 = c^2\\) is rendered inline, alongside $E=mc^2$.
 
 ### 3. High Quality Export
 The **High Quality PDF (via Print)** option uses your browser's native print engine for perfect, scalable output.
@@ -453,9 +456,17 @@ function calculate_score(team_data) {
                 if (window.renderMathInElement) {
                     renderMathInElement(preview, {
                         delimiters: [
+                            // Display math: $$...$$
                             { left: '$$', right: '$$', display: true },
+                            // Display math: \[...\] (LaTeX standard)
+                            { left: '\\[', right: '\\]', display: true },
+                            // Inline math: $...$
                             { left: '$', right: '$', display: false },
+                            // Inline math: \(...\) (LaTeX standard)
+                            { left: '\\(', right: '\\)', display: false },
                         ],
+                        // Crucial: Prevent KaTeX from trying to parse math inside code blocks
+                        ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
                         throwOnError: false
                     });
                 }

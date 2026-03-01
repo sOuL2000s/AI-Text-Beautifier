@@ -10,6 +10,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 
+    <!-- Google Fonts Library -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Fira+Code:wght@300..700&family=Inter:wght@100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300..900;1,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Public+Sans:ital,wght@0,100..900;1,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Syne:wght@400..800&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
     <!-- KaTeX for Math Rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -261,25 +266,49 @@
         <div class="control-group">
             <select id="theme-select" onchange="applyTheme(this.value)" title="Choose a global color scheme">
                 <option value="default">Default Light</option>
-                <option value="dark">Dark Mode</option>
-                <option value="sepia">Sepia Book</option>
-                <option value="academic">Academic Paper</option>
-                <option value="minimal">Minimal White</option>
-                <option value="ocean">Ocean Blue</option>
-                <option value="terminal">Green Terminal</option>
-                <option value="highcontrast">High Contrast</option>
-                <option value="solarized">Solarized Light</option>
-                <option value="solarized-dark">Solarized Dark</option>
-                <option value="newspaper">Newspaper</option>
+                <option value="dark">Pro Dark</option>
+                <option value="cyberpunk">Neon Cyberpunk</option>
+                <option value="luxury">Luxury Serif</option>
+                <option value="nord">Nord Arctic</option>
+                <option value="editorial">Editorial Journal</option>
+                <option value="saas">Modern SaaS</option>
+                <option value="pastel">Playful Pastel</option>
+                <option value="brutalist">Brutalist</option>
+                <option value="midnight">Deep Midnight</option>
+                <option value="sepia">Warm Sepia</option>
+                <option value="forest">Natural Forest</option>
+                <option value="coffee">Coffee Shop</option>
+                <option value="dracula">Dracula Dark</option>
+                <option value="monochrome">Pure Monochrome</option>
+                <option value="tokyo">Tokyo Night</option>
             </select>
 
             <select id="font-select" onchange="applyFont(this.value)" title="Select Content Font Family">
-                <option value="Segoe UI">Sans-serif (Default)</option>
-                <option value="Times New Roman">Serif (Formal)</option>
-                <option value="Georgia">Georgia (Book)</option>
-                <option value="Monospace">Monospace (Code)</option>
-                <option value="Arial">Arial</option>
-                <option value="Verdana">Verdana</option>
+                <optgroup label="Sans-Serif">
+                    <option value="Inter">Inter (UI Modern)</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Open Sans">Open Sans</option>
+                    <option value="Work Sans">Work Sans</option>
+                    <option value="Public Sans">Public Sans</option>
+                </optgroup>
+                <optgroup label="Serif">
+                    <option value="Lora">Lora (Elegant)</option>
+                    <option value="Crimson Pro">Crimson Pro</option>
+                    <option value="EB Garamond">EB Garamond</option>
+                    <option value="Merriweather">Merriweather</option>
+                    <option value="Playfair Display">Playfair Display</option>
+                </optgroup>
+                <optgroup label="Monospace">
+                    <option value="Fira Code">Fira Code</option>
+                    <option value="JetBrains Mono">JetBrains Mono</option>
+                    <option value="Space Mono">Space Mono</option>
+                    <option value="Roboto Mono">Roboto Mono</option>
+                </optgroup>
+                <optgroup label="Display & Modern">
+                    <option value="Syne">Syne (Bold Display)</option>
+                    <option value="Space Grotesk">Space Grotesk</option>
+                    <option value="Bricolage Grotesque">Bricolage Grotesque</option>
+                </optgroup>
             </select>
 
             <label class="color-picker-label" title="Custom Text Color">Txt
@@ -490,6 +519,43 @@ function calculate_score(team_data) {
             document.getElementById('line-count').textContent = `Lines: ${lines}`;
         }
 
+        /**
+         * Intelligently generates a sanitized filename from user input or markdown content.
+         * @returns {string} Sanitized filename
+         */
+        function generateFileName() {
+            let name = fileNameInput.value.trim();
+            const defaultName = "My New Document";
+
+            // If user hasn't changed the default name, try to extract from content
+            if (!name || name === defaultName) {
+                const markdown = editor.value.trim();
+                
+                // 1. Try to find first H1
+                const h1Match = markdown.match(/^#\s+(.+)$/m);
+                if (h1Match) {
+                    name = h1Match[1];
+                } else {
+                    // 2. Fallback to first meaningful sentence (max 6 words)
+                    const firstLine = markdown.split('\n').find(line => line.trim().length > 0);
+                    if (firstLine) {
+                        name = firstLine.replace(/[#*`[\]()]/g, '').trim().split(/\s+/).slice(0, 6).join(' ');
+                    }
+                }
+            }
+
+            if (!name) name = "untitled-document";
+
+            // Sanitize: No special characters, remove emojis, replace spaces with hyphens, trim
+            return name
+                .replace(/[\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF]/g, '') // Remove emojis
+                .replace(/[^a-z0-9\s-]/gi, '') // Remove special chars
+                .trim()
+                .replace(/\s+/g, '-') // Spaces to hyphens
+                .substring(0, 50)
+                .toLowerCase();
+        }
+
         function saveContent() {
             localStorage.setItem(STORAGE_KEY, editor.value);
             localStorage.setItem(FILENAME_KEY, fileNameInput.value);
@@ -503,6 +569,23 @@ function calculate_score(team_data) {
                 document.body.classList.add(`theme-${themeName}`);
             }
             localStorage.setItem(THEME_KEY, themeName);
+            
+            // Set heading font default if not explicitly set by font-select (Reset to theme default)
+            const themeHeadingFonts = {
+                'luxury': "'Playfair Display', serif",
+                'cyberpunk': "'Syne', sans-serif",
+                'editorial': "'Bricolage Grotesque', sans-serif",
+                'saas': "'Space Grotesk', sans-serif",
+                'brutalist': "'Archivo Black', sans-serif",
+                'sepia': "'Lora', serif"
+            };
+            
+            if (themeHeadingFonts[themeName]) {
+                document.documentElement.style.setProperty('--heading-font', themeHeadingFonts[themeName]);
+            } else {
+                document.documentElement.style.setProperty('--heading-font', 'var(--content-font)');
+            }
+
             logAction(`Theme set to ${themeName}.`);
             loadCustomColors(); 
             updatePreview(); 
@@ -510,6 +593,8 @@ function calculate_score(team_data) {
 
         function applyFont(font) {
             document.documentElement.style.setProperty('--content-font', font);
+            // Sync heading font if it's not a theme-specific override
+            document.documentElement.style.setProperty('--heading-font', font);
             localStorage.setItem(FONT_KEY, font);
             logAction(`Font family set to ${font}.`);
             updatePreview();
@@ -602,15 +687,32 @@ function calculate_score(team_data) {
             reader.readAsText(file);
         }
 
-        function handleExport(format) {
-            let filename = fileNameInput.value.trim() || "zenwrite_document";
+        async function handleExport(format) {
+            const sanitizedName = generateFileName();
             
             document.getElementById('export-select').value = ""; // Reset dropdown
 
             switch (format) {
                 case 'pdf':
-                    logAction("Exporting PDF via native print dialog...");
+                    const originalTitle = document.title;
+                    document.title = sanitizedName; 
+                    logAction(`Preparing High Quality PDF...`);
+                    
+                    // Ensure fonts are loaded before printing
+                    if (document.fonts) {
+                        try {
+                            await document.fonts.ready;
+                        } catch (e) {
+                            console.warn("Font loading timed out or failed, proceeding with print.");
+                        }
+                    }
+
                     window.print();
+                    
+                    setTimeout(() => {
+                        document.title = originalTitle;
+                        logAction(`PDF export triggered for ${sanitizedName}.pdf`);
+                    }, 500);
                     break;
                 case 'md':
                 case 'txt':
@@ -619,7 +721,7 @@ function calculate_score(team_data) {
                 case 'xml':
                 case 'yaml':
                 case 'html':
-                    exportTextFile(format, filename);
+                    exportTextFile(format, sanitizedName);
                     break;
             }
         }

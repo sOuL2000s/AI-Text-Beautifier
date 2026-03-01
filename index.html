@@ -10,234 +10,173 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 
+    <!-- Google Fonts Library -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Fira+Code:wght@300..700&family=Inter:wght@100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300..900;1,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Public+Sans:ital,wght@0,100..900;1,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Syne:wght@400..800&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
     <!-- KaTeX for Math Rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
-    <!-- Embedded CSS (Layout, Themes, and Print Optimization) -->
     <style>
         /* --- Root Variables (Default Light Theme) --- */
         :root {
             /* Core Colors */
-            --bg-color: #fcfcfc; /* Near white, soft background */
-            --text-color: #212121; /* Dark grey for contrast */
-            --link-color: #007bff; /* Primary action/link color (Blue) */
-            --accent-color: #007bff; /* Used for buttons/highlights */
+            --bg-color: #fcfcfc;
+            --text-color: #1a1a1a;
+            --link-color: #3b82f6;
+            --accent-color: #3b82f6;
 
             /* Header/Controls */
             --header-bg: #ffffff;
-            --header-text: #333;
-            --control-bg: #f0f0f0;
-            --control-hover-bg: #e0e0e0;
-            --border-color: #eee;
+            --header-text: #1f2937;
+            --control-bg: #f9fafb;
+            --control-hover-bg: #f3f4f6;
+            --border-color: #e5e7eb;
 
             /* Panels */
-            --panel-border: #ddd;
+            --panel-border: #f3f4f6;
             --editor-bg: #ffffff;
             --preview-bg: #ffffff;
-            --code-bg: #f8f8f8;
-            --blockquote-bg: rgba(0, 123, 255, 0.05);
+            --code-bg: #f8fafc;
+            --blockquote-bg: #eff6ff;
+            --blockquote-border: #3b82f6;
 
             /* Typography */
-            --editor-font: 'Fira Code', 'Consolas', 'Monospace'; /* Modern Monospace */
-            --content-font: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern Sans */
+            --editor-font: 'Fira Code', 'JetBrains Mono', monospace;
+            --content-font: 'Inter', sans-serif;
+            --heading-font: 'Inter', sans-serif;
 
             /* Status Bar */
-            --status-bg: #333;
-            --status-text: #fff;
-            --action-log-color: #ffc107; /* Yellow/Amber for actions */
+            --status-bg: #1f2937;
+            --status-text: #f9fafb;
+            --action-log-color: #fbbf24;
 
-            /* Smoothness */
-            --transition-speed: 0.3s ease;
+            --transition-speed: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* --- Theme Definitions --- */
         .theme-dark { 
-            --bg-color: #1e1e1e; 
-            --text-color: #e0e0e0; 
-            --header-bg: #2d2d2d; 
-            --header-text: #ffffff; 
-            --control-bg: #3c3c3c;
-            --control-hover-bg: #4c4c4c;
-            --border-color: #444;
-            --panel-border: #444; 
-            --editor-bg: #252526; /* VS Code dark editor */
-            --preview-bg: #1e1e1e; 
-            --code-bg: #333333; 
-            --link-color: #5bc0de; /* Light blue/cyan */
-            --accent-color: #5bc0de;
-            --blockquote-bg: rgba(91, 192, 222, 0.1);
-            --status-bg: #111; 
+            --bg-color: #0f172a; --text-color: #f1f5f9; --header-bg: #1e293b; --header-text: #f8fafc; 
+            --control-bg: #334155; --control-hover-bg: #475569; --border-color: #334155; --panel-border: #1e293b; 
+            --editor-bg: #1e293b; --preview-bg: #0f172a; --code-bg: #1e293b; --link-color: #38bdf8; 
+            --accent-color: #38bdf8; --blockquote-bg: rgba(56, 189, 248, 0.1); --status-bg: #020617; 
+            --header-control-text: #f8fafc;
         }
+
+        .theme-cyberpunk {
+            --bg-color: #050505; --text-color: #00ff9f; --header-bg: #0d0d0d; --header-text: #ff0055;
+            --control-bg: #1a1a1a; --control-hover-bg: #ff0055; --border-color: #ff0055; --panel-border: #ff0055;
+            --editor-bg: #0a0a0a; --preview-bg: #050505; --code-bg: #111; --link-color: #00b8ff;
+            --accent-color: #ff0055; --blockquote-bg: rgba(255, 0, 85, 0.1); --status-bg: #000;
+            --heading-font: 'Syne', sans-serif; --header-control-text: #ff0055;
+        }
+
+        .theme-luxury {
+            --bg-color: #0a110a; --text-color: #e5e7eb; --header-bg: #111b11; --header-text: #c5a059;
+            --control-bg: #1a261a; --control-hover-bg: #c5a059; --border-color: #c5a059; --panel-border: #c5a059;
+            --editor-bg: #0d160d; --preview-bg: #0a110a; --code-bg: #141e14; --link-color: #c5a059;
+            --accent-color: #c5a059; --blockquote-bg: rgba(197, 160, 89, 0.05); --status-bg: #050a05;
+            --heading-font: 'Playfair Display', serif; --content-font: 'EB Garamond', serif;
+            --header-control-text: #c5a059;
+        }
+
+        .theme-nord {
+            --bg-color: #2e3440; --text-color: #d8dee9; --header-bg: #3b4252; --header-text: #eceff4;
+            --control-bg: #434c5e; --control-hover-bg: #4c566a; --border-color: #4c566a; --panel-border: #3b4252;
+            --editor-bg: #3b4252; --preview-bg: #2e3440; --code-bg: #434c5e; --link-color: #88c0d0;
+            --accent-color: #81a1c1; --blockquote-bg: rgba(136, 192, 208, 0.1); --status-bg: #242933;
+            --header-control-text: #eceff4;
+        }
+
+        .theme-editorial {
+            --bg-color: #ffffff; --text-color: #111111; --header-bg: #f8f8f8; --header-text: #000;
+            --control-bg: #fff; --control-hover-bg: #000; --border-color: #ddd; --panel-border: #eee;
+            --editor-bg: #ffffff; --preview-bg: #ffffff; --code-bg: #f4f4f4; --link-color: #d00000;
+            --accent-color: #d00000; --blockquote-bg: #fff; --blockquote-border: #000;
+            --heading-font: 'Bricolage Grotesque', sans-serif; --content-font: 'Crimson Pro', serif;
+        }
+
+        .theme-saas {
+            --bg-color: #fdfdff; --text-color: #334155; --header-bg: #fff; --header-text: #4f46e5;
+            --control-bg: #f5f3ff; --control-hover-bg: #4f46e5; --border-color: #e0e7ff; --panel-border: #f1f5f9;
+            --editor-bg: #fff; --preview-bg: #fdfdff; --code-bg: #f8fafc; --link-color: #4f46e5;
+            --accent-color: #6366f1; --blockquote-bg: #f5f3ff; --status-bg: #4f46e5;
+            --heading-font: 'Space Grotesk', sans-serif;
+        }
+
+        .theme-pastel {
+            --bg-color: #fff9fb; --text-color: #6d5d6e; --header-bg: #fce7f3; --header-text: #db2777;
+            --control-bg: #fff; --control-hover-bg: #fbcfe8; --border-color: #fbcfe8; --panel-border: #fce7f3;
+            --editor-bg: #fff; --preview-bg: #fff9fb; --code-bg: #fdf2f8; --link-color: #db2777;
+            --accent-color: #f472b6; --blockquote-bg: #fdf2f8; --status-bg: #db2777;
+            --content-font: 'Work Sans', sans-serif;
+        }
+
+        .theme-brutalist {
+            --bg-color: #fff; --text-color: #000; --header-bg: #ffdf00; --header-text: #000;
+            --control-bg: #fff; --control-hover-bg: #000; --border-color: #000; --panel-border: #000;
+            --editor-bg: #fff; --preview-bg: #fff; --code-bg: #eee; --link-color: #000;
+            --accent-color: #000; --blockquote-bg: #fff; --blockquote-border: #000;
+            --heading-font: 'Archivo Black', sans-serif; --content-font: 'Space Mono', monospace;
+        }
+
+        .theme-midnight {
+            --bg-color: #020617; --text-color: #94a3b8; --header-bg: #0f172a; --header-text: #38bdf8;
+            --control-bg: #1e293b; --control-hover-bg: #334155; --border-color: #334155; --panel-border: #0f172a;
+            --editor-bg: #0f172a; --preview-bg: #020617; --code-bg: #0f172a; --link-color: #7dd3fc;
+            --accent-color: #38bdf8; --blockquote-bg: rgba(56, 189, 248, 0.05); --status-bg: #000;
+            --header-control-text: #38bdf8;
+        }
+
         .theme-sepia { 
-            --bg-color: #f7f3e0; 
-            --text-color: #5b4636; 
-            --header-bg: #e0d9c4; 
-            --header-text: #5b4636; 
-            --control-bg: #fff;
-            --control-hover-bg: #f0e9d6;
-            --border-color: #d4cbb8;
-            --panel-border: #d4cbb8; 
-            --editor-bg: #fffbf0; 
-            --preview-bg: #fffbf0; 
-            --code-bg: #eee9dc; 
-            --content-font: 'Georgia', serif; 
-            --link-color: #2d6e9e; 
-            --accent-color: #2d6e9e;
-            --status-bg: #5b4636; 
-            --status-text: #fff;
-            --blockquote-bg: rgba(45, 110, 158, 0.1);
+            --bg-color: #f4ecd8; --text-color: #433422; --header-bg: #e8dfc4; --header-text: #433422; 
+            --control-bg: #fff; --control-hover-bg: #d8cfb4; --border-color: #d8cfb4; --panel-border: #d8cfb4; 
+            --editor-bg: #fbf6e9; --preview-bg: #f4ecd8; --code-bg: #ebe1c5; --link-color: #8c4b2d; 
+            --accent-color: #8c4b2d; --blockquote-bg: rgba(140, 75, 45, 0.05); --status-bg: #433422;
+            --content-font: 'Lora', serif;
         }
-        .theme-academic { 
-            --bg-color: #ffffff; 
-            --text-color: #1a1a1a; 
-            --header-bg: #003366; 
-            --header-text: #fff; 
-            --control-bg: #004488;
-            --control-hover-bg: #0055aa;
-            --border-color: #a1b2c4;
-            --panel-border: #a1b2c4; 
-            --editor-bg: #ffffff; 
-            --preview-bg: #ffffff; 
-            --code-bg: #e6f0ff; 
-            --content-font: 'Times New Roman', serif; 
-            --link-color: #a31f34; /* Maroon accent */
-            --accent-color: #a31f34;
-            --status-bg: #003366; 
-            --blockquote-bg: rgba(163, 31, 52, 0.05);
-            --header-control-text: var(--header-text); /* Force controls and input text to white */
+
+        .theme-forest {
+            --bg-color: #1a2e1a; --text-color: #d1d5db; --header-bg: #2d4a2d; --header-text: #86efac;
+            --control-bg: #3d5e3d; --control-hover-bg: #86efac; --border-color: #3d5e3d; --panel-border: #2d4a2d;
+            --editor-bg: #223a22; --preview-bg: #1a2e1a; --code-bg: #2d4a2d; --link-color: #86efac;
+            --accent-color: #4ade80; --blockquote-bg: rgba(74, 222, 128, 0.1); --status-bg: #142114;
+            --header-control-text: #86efac;
         }
-        .theme-minimal { 
-            --bg-color: #ffffff; 
-            --text-color: #111; 
-            --header-bg: #f9f9f9; 
-            --header-text: #333; 
-            --control-bg: #fff;
-            --control-hover-bg: #f0f0f0;
-            --border-color: #eee;
-            --panel-border: #ddd; 
-            --editor-bg: #ffffff; 
-            --preview-bg: #ffffff; 
-            --code-bg: #f8f8f8; 
-            --link-color: #000000; 
-            --accent-color: #333;
-            --status-bg: #f0f0f0; 
-            --status-text: #333; 
-            --blockquote-bg: rgba(0, 0, 0, 0.03);
+
+        .theme-coffee {
+            --bg-color: #2c1e1a; --text-color: #e7d8c9; --header-bg: #3c2a24; --header-text: #d4a373;
+            --control-bg: #4d3a33; --control-hover-bg: #d4a373; --border-color: #4d3a33; --panel-border: #3c2a24;
+            --editor-bg: #352520; --preview-bg: #2c1e1a; --code-bg: #3c2a24; --link-color: #faedcd;
+            --accent-color: #d4a373; --blockquote-bg: rgba(212, 163, 115, 0.1); --status-bg: #1b1210;
+            --header-control-text: #d4a373;
         }
-        .theme-ocean { 
-            --bg-color: #e0f7fa; 
-            --text-color: #004d40; 
-            --header-bg: #00838f; 
-            --header-text: #fff; 
-            --control-bg: #26c6da;
-            --control-hover-bg: #00bcd4;
-            --border-color: #b2ebf2;
-            --panel-border: #b2ebf2; 
-            --editor-bg: #ffffff; 
-            --preview-bg: #ffffff; 
-            --code-bg: #b2ebf2; 
-            --link-color: #006064; 
-            --accent-color: #006064;
-            --status-bg: #0097a7; 
-            --blockquote-bg: rgba(0, 96, 100, 0.1);
-            --header-control-text: var(--header-text);
+
+        .theme-dracula {
+            --bg-color: #282a36; --text-color: #f8f8f2; --header-bg: #44475a; --header-text: #bd93f9;
+            --control-bg: #6272a4; --control-hover-bg: #bd93f9; --border-color: #6272a4; --panel-border: #44475a;
+            --editor-bg: #282a36; --preview-bg: #282a36; --code-bg: #44475a; --link-color: #ff79c6;
+            --accent-color: #bd93f9; --blockquote-bg: rgba(189, 147, 249, 0.1); --status-bg: #191a21;
+            --header-control-text: #bd93f9;
         }
-        .theme-terminal { 
-            --bg-color: #000000; 
-            --text-color: #00ff00; 
-            --header-bg: #0a0a0a; 
-            --header-text: #00ff00; 
-            --control-bg: #003300;
-            --control-hover-bg: #004400;
-            --border-color: #003300;
-            --panel-border: #003300; 
-            --editor-bg: #000000; 
-            --preview-bg: #000000; 
-            --code-bg: #111; 
-            --link-color: #00ffff; 
-            --accent-color: #00ffff;
-            --editor-font: 'Monospace', 'Courier New'; 
-            --status-bg: #000; 
-            --action-log-color: #ffff00;
-            --blockquote-bg: #0a0a0a;
-            --header-control-text: var(--header-text);
+
+        .theme-monochrome {
+            --bg-color: #fff; --text-color: #000; --header-bg: #fff; --header-text: #000;
+            --control-bg: #fff; --control-hover-bg: #f4f4f4; --border-color: #000; --panel-border: #000;
+            --editor-bg: #fff; --preview-bg: #fff; --code-bg: #f4f4f4; --link-color: #000;
+            --accent-color: #000; --blockquote-bg: #fff; --blockquote-border: #000;
+            --heading-font: 'Inter', sans-serif; --content-font: 'Inter', sans-serif;
         }
-        .theme-highcontrast { 
-            --bg-color: #ffffff; 
-            --text-color: #000000; 
-            --header-bg: #000000; 
-            --header-text: #ffffff; 
-            --control-bg: #222;
-            --control-hover-bg: #444;
-            --border-color: #000000;
-            --panel-border: #000000; 
-            --editor-bg: #ffffff; 
-            --preview-bg: #ffffff; 
-            --code-bg: #e0e0e0; 
-            --link-color: #0000ff; 
-            --accent-color: #0000ff;
-            --status-bg: #000; 
-            --blockquote-bg: #f0f0f0;
-            --header-control-text: var(--header-text); /* Force controls and input text to white */
-        }
-        .theme-solarized { 
-            --bg-color: #fdf6e3; 
-            --text-color: #586e75; 
-            --header-bg: #eee8d5; 
-            --header-text: #586e75; 
-            --control-bg: #fcf6e9;
-            --control-hover-bg: #e9e3d5;
-            --border-color: #eee8d5;
-            --panel-border: #eee8d5; 
-            --editor-bg: #fdf6e3; 
-            --preview-bg: #fdf6e3; 
-            --code-bg: #eee8d5; 
-            --link-color: #268bd2; 
-            --accent-color: #268bd2;
-            --status-bg: #eee8d5; 
-            --status-text: #586e75; 
-            --action-log-color: #cb4b16;
-            --blockquote-bg: #fbf1d8;
-        }
-        .theme-solarized-dark { 
-            --bg-color: #002b36; 
-            --text-color: #839496; 
-            --header-bg: #073642; 
-            --header-text: #839496; 
-            --control-bg: #0e4c5b;
-            --control-hover-bg: #1a6272;
-            --border-color: #073642;
-            --panel-border: #073642; 
-            --editor-bg: #002b36; 
-            --preview-bg: #002b36; 
-            --code-bg: #073642; 
-            --link-color: #268bd2; 
-            --accent-color: #268bd2;
-            --status-bg: #073642;
-            --action-log-color: #cb4b16;
-            --blockquote-bg: #023844;
-            --header-control-text: var(--header-text); /* Ensure controls use header text color */
-        }
-        .theme-newspaper { 
-            --bg-color: #fcfcf4; 
-            --text-color: #1a1a1a; 
-            --header-bg: #333; 
-            --header-text: #fff; 
-            --control-bg: #555;
-            --control-hover-bg: #666;
-            --border-color: #aaa;
-            --panel-border: #aaa; 
-            --editor-bg: #ffffff; 
-            --preview-bg: #ffffff; 
-            --code-bg: #f0f0f0; 
-            --content-font: 'Lora', serif; 
-            --link-color: #800000; 
-            --accent-color: #800000;
-            --status-bg: #222; 
-            --blockquote-bg: rgba(128, 0, 0, 0.05);
-            --header-control-text: var(--header-text); /* Force controls and input text to white */
+
+        .theme-tokyo {
+            --bg-color: #1a1b26; --text-color: #a9b1d6; --header-bg: #16161e; --header-text: #7aa2f7;
+            --control-bg: #24283b; --control-hover-bg: #7aa2f7; --border-color: #24283b; --panel-border: #16161e;
+            --editor-bg: #1a1b26; --preview-bg: #1a1b26; --code-bg: #16161e; --link-color: #bb9af7;
+            --accent-color: #7aa2f7; --blockquote-bg: rgba(122, 162, 247, 0.1); --status-bg: #15161e;
+            --header-control-text: #7aa2f7;
         }
 
         /* --- Global Layout and Controls --- */
@@ -421,7 +360,8 @@
             color: var(--link-color); 
             padding-bottom: 5px; 
             margin-top: 2em; 
-            font-weight: 600; /* slightly heavier */
+            font-family: var(--heading-font);
+            font-weight: 700;
             line-height: 1.2;
         }
         #preview h1 { font-size: 2.2em; border-bottom: 3px solid var(--panel-border); }
@@ -508,36 +448,62 @@
         }
         
         /* --- PRINT CSS (For High Quality PDF Export) --- */
+        @page {
+            size: A4;
+            margin: 0; /* Remove browser default margin (handles headers/footers) */
+        }
+
         @media print {
-            header, #editor-container, #status-bar, .controls { display: none !important; }
-            
-            body, main { 
-                display: block !important; 
-                height: auto !important; 
-                margin: 0; 
-                padding: 0; 
-                background-color: #fff; 
-                color: #000; 
-            }
-            
-            /* Ensure the content panel expands fully without height constraints */
-            .panel { 
-                flex: none !important; 
-                width: 100% !important; 
-                height: auto !important; 
-                min-height: auto !important;
-                overflow: visible !important; 
-                box-sizing: border-box; 
-                padding: 0; 
+            /* Force background colors and colors */
+            html, body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background-color: var(--bg-color) !important;
+                color: var(--text-color) !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
             }
 
-            #preview { 
-                background-color: #fff !important; 
-                color: #000 !important; 
-                padding: 1cm; /* Set professional print margins */
-            } 
+            /* Hide everything except the preview */
+            header, #editor-container, #status-bar, footer {
+                display: none !important;
+            }
+
+            main {
+                display: block !important;
+                height: auto !important;
+            }
+
+            .panel {
+                display: none !important; /* Hide panels by default */
+            }
+
+            #preview {
+                display: block !important; /* Show only preview */
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                padding: 40px !important; /* Managed by CSS instead of browser */
+                background-color: var(--preview-bg) !important;
+                color: var(--text-color) !important;
+                min-height: 100vh;
+                box-sizing: border-box;
+                overflow: visible !important;
+            }
+
+            /* Elements styling preservation */
+            #preview pre, #preview code { background-color: var(--code-bg) !important; }
+            #preview blockquote { background-color: var(--blockquote-bg) !important; border-left-color: var(--link-color) !important; }
+            #preview h1, #preview h2, #preview h3 { border-bottom-color: var(--panel-border) !important; color: var(--link-color) !important; }
+            #preview a { color: var(--link-color) !important; }
+            .katex { color: inherit !important; }
             
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            * {
+                box-shadow: none !important;
+                text-shadow: none !important;
+            }
         }
 
         /* --- Responsive Adjustments for Tablets and Phones --- */
@@ -643,25 +609,49 @@
         <div class="control-group">
             <select id="theme-select" onchange="applyTheme(this.value)" title="Choose a global color scheme">
                 <option value="default">Default Light</option>
-                <option value="dark">Dark Mode</option>
-                <option value="sepia">Sepia Book</option>
-                <option value="academic">Academic Paper</option>
-                <option value="minimal">Minimal White</option>
-                <option value="ocean">Ocean Blue</option>
-                <option value="terminal">Green Terminal</option>
-                <option value="highcontrast">High Contrast</option>
-                <option value="solarized">Solarized Light</option>
-                <option value="solarized-dark">Solarized Dark</option>
-                <option value="newspaper">Newspaper</option>
+                <option value="dark">Pro Dark</option>
+                <option value="cyberpunk">Neon Cyberpunk</option>
+                <option value="luxury">Luxury Serif</option>
+                <option value="nord">Nord Arctic</option>
+                <option value="editorial">Editorial Journal</option>
+                <option value="saas">Modern SaaS</option>
+                <option value="pastel">Playful Pastel</option>
+                <option value="brutalist">Brutalist</option>
+                <option value="midnight">Deep Midnight</option>
+                <option value="sepia">Warm Sepia</option>
+                <option value="forest">Natural Forest</option>
+                <option value="coffee">Coffee Shop</option>
+                <option value="dracula">Dracula Dark</option>
+                <option value="monochrome">Pure Monochrome</option>
+                <option value="tokyo">Tokyo Night</option>
             </select>
 
             <select id="font-select" onchange="applyFont(this.value)" title="Select Content Font Family">
-                <option value="Segoe UI">Sans-serif (Default)</option>
-                <option value="Times New Roman">Serif (Formal)</option>
-                <option value="Georgia">Georgia (Book)</option>
-                <option value="Monospace">Monospace (Code)</option>
-                <option value="Arial">Arial</option>
-                <option value="Verdana">Verdana</option>
+                <optgroup label="Sans-Serif">
+                    <option value="Inter">Inter (UI Modern)</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Open Sans">Open Sans</option>
+                    <option value="Work Sans">Work Sans</option>
+                    <option value="Public Sans">Public Sans</option>
+                </optgroup>
+                <optgroup label="Serif">
+                    <option value="Lora">Lora (Elegant)</option>
+                    <option value="Crimson Pro">Crimson Pro</option>
+                    <option value="EB Garamond">EB Garamond</option>
+                    <option value="Merriweather">Merriweather</option>
+                    <option value="Playfair Display">Playfair Display</option>
+                </optgroup>
+                <optgroup label="Monospace">
+                    <option value="Fira Code">Fira Code</option>
+                    <option value="JetBrains Mono">JetBrains Mono</option>
+                    <option value="Space Mono">Space Mono</option>
+                    <option value="Roboto Mono">Roboto Mono</option>
+                </optgroup>
+                <optgroup label="Display & Modern">
+                    <option value="Syne">Syne (Bold Display)</option>
+                    <option value="Space Grotesk">Space Grotesk</option>
+                    <option value="Bricolage Grotesque">Bricolage Grotesque</option>
+                </optgroup>
             </select>
 
             <label class="color-picker-label" title="Custom Text Color">Txt
@@ -873,6 +863,43 @@ function calculate_score(team_data) {
             document.getElementById('line-count').textContent = `Lines: ${lines}`;
         }
 
+        /**
+         * Intelligently generates a sanitized filename from user input or markdown content.
+         * @returns {string} Sanitized filename
+         */
+        function generateFileName() {
+            let name = fileNameInput.value.trim();
+            const defaultName = "My New Document";
+
+            // If user hasn't changed the default name, try to extract from content
+            if (!name || name === defaultName) {
+                const markdown = editor.value.trim();
+                
+                // 1. Try to find first H1
+                const h1Match = markdown.match(/^#\s+(.+)$/m);
+                if (h1Match) {
+                    name = h1Match[1];
+                } else {
+                    // 2. Fallback to first meaningful sentence (max 6 words)
+                    const firstLine = markdown.split('\n').find(line => line.trim().length > 0);
+                    if (firstLine) {
+                        name = firstLine.replace(/[#*`[\]()]/g, '').trim().split(/\s+/).slice(0, 6).join(' ');
+                    }
+                }
+            }
+
+            if (!name) name = "untitled-document";
+
+            // Sanitize: No special characters, remove emojis, replace spaces with hyphens, trim
+            return name
+                .replace(/[\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF]/g, '') // Remove emojis
+                .replace(/[^a-z0-9\s-]/gi, '') // Remove special chars
+                .trim()
+                .replace(/\s+/g, '-') // Spaces to hyphens
+                .substring(0, 50)
+                .toLowerCase();
+        }
+
         function saveContent() {
             localStorage.setItem(STORAGE_KEY, editor.value);
             localStorage.setItem(FILENAME_KEY, fileNameInput.value);
@@ -886,6 +913,23 @@ function calculate_score(team_data) {
                 document.body.classList.add(`theme-${themeName}`);
             }
             localStorage.setItem(THEME_KEY, themeName);
+            
+            // Set heading font default if not explicitly set by font-select (Reset to theme default)
+            const themeHeadingFonts = {
+                'luxury': "'Playfair Display', serif",
+                'cyberpunk': "'Syne', sans-serif",
+                'editorial': "'Bricolage Grotesque', sans-serif",
+                'saas': "'Space Grotesk', sans-serif",
+                'brutalist': "'Archivo Black', sans-serif",
+                'sepia': "'Lora', serif"
+            };
+            
+            if (themeHeadingFonts[themeName]) {
+                document.documentElement.style.setProperty('--heading-font', themeHeadingFonts[themeName]);
+            } else {
+                document.documentElement.style.setProperty('--heading-font', 'var(--content-font)');
+            }
+
             logAction(`Theme set to ${themeName}.`);
             loadCustomColors(); 
             updatePreview(); 
@@ -893,6 +937,8 @@ function calculate_score(team_data) {
 
         function applyFont(font) {
             document.documentElement.style.setProperty('--content-font', font);
+            // Sync heading font if it's not a theme-specific override
+            document.documentElement.style.setProperty('--heading-font', font);
             localStorage.setItem(FONT_KEY, font);
             logAction(`Font family set to ${font}.`);
             updatePreview();
@@ -1005,15 +1051,32 @@ function calculate_score(team_data) {
             reader.readAsText(file);
         }
 
-        function handleExport(format) {
-            let filename = fileNameInput.value.trim() || "zenwrite_document";
+        async function handleExport(format) {
+            const sanitizedName = generateFileName();
             
             document.getElementById('export-select').value = ""; // Reset dropdown
 
             switch (format) {
                 case 'pdf':
-                    logAction("Exporting PDF via native print dialog...");
+                    const originalTitle = document.title;
+                    document.title = sanitizedName; 
+                    logAction(`Preparing High Quality PDF...`);
+                    
+                    // Ensure fonts are loaded before printing
+                    if (document.fonts) {
+                        try {
+                            await document.fonts.ready;
+                        } catch (e) {
+                            console.warn("Font loading timed out or failed, proceeding with print.");
+                        }
+                    }
+
                     window.print();
+                    
+                    setTimeout(() => {
+                        document.title = originalTitle;
+                        logAction(`PDF export triggered for ${sanitizedName}.pdf`);
+                    }, 500);
                     break;
                 case 'md':
                 case 'txt':
@@ -1022,7 +1085,7 @@ function calculate_score(team_data) {
                 case 'xml':
                 case 'yaml':
                 case 'html':
-                    exportTextFile(format, filename);
+                    exportTextFile(format, sanitizedName);
                     break;
             }
         }

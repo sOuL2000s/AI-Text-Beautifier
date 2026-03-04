@@ -13,7 +13,7 @@
     <!-- Google Fonts Library -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Fira+Code:wght@300..700&family=Inter:wght@100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300..900;1,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Public+Sans:ital,wght@0,100..900;1,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Syne:wght@400..800&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Fira+Code:wght@300..700&family=Inter:wght@100..900;1,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300..900;1,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Public+Sans:ital,wght@0,100..900;1,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Syne:wght@400..800&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
     <!-- KaTeX for Math Rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -33,7 +33,8 @@
             --header-bg: #ffffff;
             --header-text: #1f2937;
             --control-bg: #f9fafb;
-            --control-hover-bg: #f3f4f6;
+            --control-hover-bg: #e5e7eb; /* Subtle hover */
+            --control-active-bg: #d1d5db; /* Darker for click */
             --border-color: #e5e7eb;
 
             /* Panels */
@@ -58,34 +59,42 @@
         }
 
         /* --- Theme Definitions --- */
-        .theme-dark { 
-            --bg-color: #0f172a; --text-color: #f1f5f9; --header-bg: #1e293b; --header-text: #f8fafc; 
-            --control-bg: #334155; --control-hover-bg: #475569; --border-color: #334155; --panel-border: #1e293b; 
-            --editor-bg: #1e293b; --preview-bg: #0f172a; --code-bg: #1e293b; --link-color: #38bdf8; 
-            --accent-color: #38bdf8; --blockquote-bg: rgba(56, 189, 248, 0.1); --status-bg: #020617; 
+        .theme-dark {
+            --bg-color: #0f172a; --text-color: #f1f5f9; --header-bg: #1e293b; --header-text: #f8fafc;
+            --control-bg: #334155; --control-hover-bg: #475569; --control-active-bg: #64748b; --border-color: #334155; --panel-border: #1e293b;
+            --editor-bg: #1e293b; --preview-bg: #0f172a; --code-bg: #1e293b; --link-color: #38bdf8;
+            --accent-color: #38bdf8; --blockquote-bg: rgba(56, 189, 248, 0.1); --status-bg: #020617;
             --header-control-text: #f8fafc;
         }
 
         .theme-cyberpunk {
             --bg-color: #050505; --text-color: #00ff9f; --header-bg: #0d0d0d; --header-text: #ff0055;
-            --control-bg: #1a1a1a; --control-hover-bg: #ff0055; --border-color: #ff0055; --panel-border: #ff0055;
+            --control-bg: #1a1a1a; --control-hover-bg: #ff0055; /* Accent color for hover */
+            --control-active-bg: #cc0044; /* Darker accent for active */
+            --border-color: #ff0055; --panel-border: #ff0055;
             --editor-bg: #0a0a0a; --preview-bg: #050505; --code-bg: #111; --link-color: #00b8ff;
             --accent-color: #ff0055; --blockquote-bg: rgba(255, 0, 85, 0.1); --status-bg: #000;
             --heading-font: 'Syne', sans-serif; --header-control-text: #ff0055;
+            /* New: Text color for controls when hover background is accent */
+            --control-hover-text: #050505;
         }
 
         .theme-luxury {
             --bg-color: #0a110a; --text-color: #e5e7eb; --header-bg: #111b11; --header-text: #c5a059;
-            --control-bg: #1a261a; --control-hover-bg: #c5a059; --border-color: #c5a059; --panel-border: #c5a059;
+            --control-bg: #1a261a; --control-hover-bg: #c5a059; /* Accent color for hover */
+            --control-active-bg: #a18048; /* Darker accent for active */
+            --border-color: #c5a059; --panel-border: #c5a059;
             --editor-bg: #0d160d; --preview-bg: #0a110a; --code-bg: #141e14; --link-color: #c5a059;
             --accent-color: #c5a059; --blockquote-bg: rgba(197, 160, 89, 0.05); --status-bg: #050a05;
             --heading-font: 'Playfair Display', serif; --content-font: 'EB Garamond', serif;
             --header-control-text: #c5a059;
+            /* New: Text color for controls when hover background is accent */
+            --control-hover-text: #0a110a;
         }
 
         .theme-nord {
             --bg-color: #2e3440; --text-color: #d8dee9; --header-bg: #3b4252; --header-text: #eceff4;
-            --control-bg: #434c5e; --control-hover-bg: #4c566a; --border-color: #4c566a; --panel-border: #3b4252;
+            --control-bg: #434c5e; --control-hover-bg: #4c566a; --control-active-bg: #5e687e; --border-color: #4c566a; --panel-border: #3b4252;
             --editor-bg: #3b4252; --preview-bg: #2e3440; --code-bg: #434c5e; --link-color: #88c0d0;
             --accent-color: #81a1c1; --blockquote-bg: rgba(136, 192, 208, 0.1); --status-bg: #242933;
             --header-control-text: #eceff4;
@@ -93,7 +102,7 @@
 
         .theme-editorial {
             --bg-color: #ffffff; --text-color: #111111; --header-bg: #f8f8f8; --header-text: #000;
-            --control-bg: #fff; --control-hover-bg: #000; --border-color: #ddd; --panel-border: #eee;
+            --control-bg: #fff; --control-hover-bg: #f0f0f0; --control-active-bg: #e0e0e0; --border-color: #ddd; --panel-border: #eee;
             --editor-bg: #ffffff; --preview-bg: #ffffff; --code-bg: #f4f4f4; --link-color: #d00000;
             --accent-color: #d00000; --blockquote-bg: #fff; --blockquote-border: #000;
             --heading-font: 'Bricolage Grotesque', sans-serif; --content-font: 'Crimson Pro', serif;
@@ -101,7 +110,7 @@
 
         .theme-saas {
             --bg-color: #fdfdff; --text-color: #334155; --header-bg: #fff; --header-text: #4f46e5;
-            --control-bg: #f5f3ff; --control-hover-bg: #4f46e5; --border-color: #e0e7ff; --panel-border: #f1f5f9;
+            --control-bg: #f5f3ff; --control-hover-bg: #e0e7ff; --control-active-bg: #c7d2fe; --border-color: #e0e7ff; --panel-border: #f1f5f9;
             --editor-bg: #fff; --preview-bg: #fdfdff; --code-bg: #f8fafc; --link-color: #4f46e5;
             --accent-color: #6366f1; --blockquote-bg: #f5f3ff; --status-bg: #4f46e5;
             --heading-font: 'Space Grotesk', sans-serif;
@@ -109,7 +118,7 @@
 
         .theme-pastel {
             --bg-color: #fff9fb; --text-color: #6d5d6e; --header-bg: #fce7f3; --header-text: #db2777;
-            --control-bg: #fff; --control-hover-bg: #fbcfe8; --border-color: #fbcfe8; --panel-border: #fce7f3;
+            --control-bg: #fff; --control-hover-bg: #fbcfe8; --control-active-bg: #f9a8d4; --border-color: #fbcfe8; --panel-border: #fce7f3;
             --editor-bg: #fff; --preview-bg: #fff9fb; --code-bg: #fdf2f8; --link-color: #db2777;
             --accent-color: #f472b6; --blockquote-bg: #fdf2f8; --status-bg: #db2777;
             --content-font: 'Work Sans', sans-serif;
@@ -117,7 +126,7 @@
 
         .theme-brutalist {
             --bg-color: #fff; --text-color: #000; --header-bg: #ffdf00; --header-text: #000;
-            --control-bg: #fff; --control-hover-bg: #000; --border-color: #000; --panel-border: #000;
+            --control-bg: #fff; --control-hover-bg: #eee; --control-active-bg: #ddd; --border-color: #000; --panel-border: #000;
             --editor-bg: #fff; --preview-bg: #fff; --code-bg: #eee; --link-color: #000;
             --accent-color: #000; --blockquote-bg: #fff; --blockquote-border: #000;
             --heading-font: 'Archivo Black', sans-serif; --content-font: 'Space Mono', monospace;
@@ -125,47 +134,59 @@
 
         .theme-midnight {
             --bg-color: #020617; --text-color: #94a3b8; --header-bg: #0f172a; --header-text: #38bdf8;
-            --control-bg: #1e293b; --control-hover-bg: #334155; --border-color: #334155; --panel-border: #0f172a;
+            --control-bg: #1e293b; --control-hover-bg: #334155; --control-active-bg: #475569; --border-color: #334155; --panel-border: #0f172a;
             --editor-bg: #0f172a; --preview-bg: #020617; --code-bg: #0f172a; --link-color: #7dd3fc;
             --accent-color: #38bdf8; --blockquote-bg: rgba(56, 189, 248, 0.05); --status-bg: #000;
             --header-control-text: #38bdf8;
         }
 
-        .theme-sepia { 
-            --bg-color: #f4ecd8; --text-color: #433422; --header-bg: #e8dfc4; --header-text: #433422; 
-            --control-bg: #fff; --control-hover-bg: #d8cfb4; --border-color: #d8cfb4; --panel-border: #d8cfb4; 
-            --editor-bg: #fbf6e9; --preview-bg: #f4ecd8; --code-bg: #ebe1c5; --link-color: #8c4b2d; 
+        .theme-sepia {
+            --bg-color: #f4ecd8; --text-color: #433422; --header-bg: #e8dfc4; --header-text: #433422;
+            --control-bg: #fff; --control-hover-bg: #d8cfb4; --control-active-bg: #cbbfa7; --border-color: #d8cfb4; --panel-border: #d8cfb4;
+            --editor-bg: #fbf6e9; --preview-bg: #f4ecd8; --code-bg: #ebe1c5; --link-color: #8c4b2d;
             --accent-color: #8c4b2d; --blockquote-bg: rgba(140, 75, 45, 0.05); --status-bg: #433422;
             --content-font: 'Lora', serif;
         }
 
         .theme-forest {
             --bg-color: #1a2e1a; --text-color: #d1d5db; --header-bg: #2d4a2d; --header-text: #86efac;
-            --control-bg: #3d5e3d; --control-hover-bg: #86efac; --border-color: #3d5e3d; --panel-border: #2d4a2d;
+            --control-bg: #3d5e3d; --control-hover-bg: #86efac; /* Accent color for hover */
+            --control-active-bg: #5cb87f; /* Darker accent for active */
+            --border-color: #3d5e3d; --panel-border: #2d4a2d;
             --editor-bg: #223a22; --preview-bg: #1a2e1a; --code-bg: #2d4a2d; --link-color: #86efac;
             --accent-color: #4ade80; --blockquote-bg: rgba(74, 222, 128, 0.1); --status-bg: #142114;
             --header-control-text: #86efac;
+            /* New: Text color for controls when hover background is accent */
+            --control-hover-text: #1a2e1a;
         }
 
         .theme-coffee {
             --bg-color: #2c1e1a; --text-color: #e7d8c9; --header-bg: #3c2a24; --header-text: #d4a373;
-            --control-bg: #4d3a33; --control-hover-bg: #d4a373; --border-color: #4d3a33; --panel-border: #3c2a24;
+            --control-bg: #4d3a33; --control-hover-bg: #d4a373; /* Accent color for hover */
+            --control-active-bg: #b18c5e; /* Darker accent for active */
+            --border-color: #4d3a33; --panel-border: #3c2a24;
             --editor-bg: #352520; --preview-bg: #2c1e1a; --code-bg: #3c2a24; --link-color: #faedcd;
             --accent-color: #d4a373; --blockquote-bg: rgba(212, 163, 115, 0.1); --status-bg: #1b1210;
             --header-control-text: #d4a373;
+            /* New: Text color for controls when hover background is accent */
+            --control-hover-text: #2c1e1a;
         }
 
         .theme-dracula {
             --bg-color: #282a36; --text-color: #f8f8f2; --header-bg: #44475a; --header-text: #bd93f9;
-            --control-bg: #6272a4; --control-hover-bg: #bd93f9; --border-color: #6272a4; --panel-border: #44475a;
+            --control-bg: #6272a4; --control-hover-bg: #bd93f9; /* Accent color for hover */
+            --control-active-bg: #9a6ce1; /* Darker accent for active */
+            --border-color: #6272a4; --panel-border: #44475a;
             --editor-bg: #282a36; --preview-bg: #282a36; --code-bg: #44475a; --link-color: #ff79c6;
             --accent-color: #bd93f9; --blockquote-bg: rgba(189, 147, 249, 0.1); --status-bg: #191a21;
             --header-control-text: #bd93f9;
+            /* New: Text color for controls when hover background is accent */
+            --control-hover-text: #282a36;
         }
 
         .theme-monochrome {
             --bg-color: #fff; --text-color: #000; --header-bg: #fff; --header-text: #000;
-            --control-bg: #fff; --control-hover-bg: #f4f4f4; --border-color: #000; --panel-border: #000;
+            --control-bg: #fff; --control-hover-bg: #f4f4f4; --control-active-bg: #e5e5e5; --border-color: #000; --panel-border: #000;
             --editor-bg: #fff; --preview-bg: #fff; --code-bg: #f4f4f4; --link-color: #000;
             --accent-color: #000; --blockquote-bg: #fff; --blockquote-border: #000;
             --heading-font: 'Inter', sans-serif; --content-font: 'Inter', sans-serif;
@@ -173,94 +194,113 @@
 
         .theme-tokyo {
             --bg-color: #1a1b26; --text-color: #a9b1d6; --header-bg: #16161e; --header-text: #7aa2f7;
-            --control-bg: #24283b; --control-hover-bg: #7aa2f7; --border-color: #24283b; --panel-border: #16161e;
+            --control-bg: #24283b; --control-hover-bg: #7aa2f7; /* Accent color for hover */
+            --control-active-bg: #5d88e0; /* Darker accent for active */
+            --border-color: #24283b; --panel-border: #16161e;
             --editor-bg: #1a1b26; --preview-bg: #1a1b26; --code-bg: #16161e; --link-color: #bb9af7;
             --accent-color: #7aa2f7; --blockquote-bg: rgba(122, 162, 247, 0.1); --status-bg: #15161e;
             --header-control-text: #7aa2f7;
+            /* New: Text color for controls when hover background is accent */
+            --control-hover-text: #1a1b26;
+        }
+
+        /* Utility classes */
+        .hidden {
+            display: none !important;
         }
 
         /* --- Global Layout and Controls --- */
-        body { 
-            display: flex; 
-            flex-direction: column; 
-            margin: 0; 
-            height: 100vh; 
-            font-family: var(--content-font); 
-            background-color: var(--bg-color); 
-            color: var(--text-color); 
-            line-height: 1.6; 
-            transition: background-color var(--transition-speed), color var(--transition-speed); 
+        body {
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            height: 100vh;
+            font-family: var(--content-font);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
         }
-        
-        header { 
-            background-color: var(--header-bg); 
-            color: var(--header-text); 
+
+        header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
             padding: 10px 20px; /* Slightly more padding */
-            display: flex; 
-            flex-wrap: wrap; 
+            display: flex;
+            flex-wrap: wrap;
             gap: 15px; /* Increased gap */
-            justify-content: space-between; 
-            align-items: center; 
+            justify-content: space-between;
+            align-items: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Softer, modern shadow */
-            flex-shrink: 0; 
+            flex-shrink: 0;
             border-bottom: 1px solid var(--border-color); /* Subtle separation */
             transition: background-color var(--transition-speed), color var(--transition-speed), box-shadow var(--transition-speed);
         }
-        
+
         /* Control Group Styling */
         .control-group { display: flex; align-items: center; gap: 8px; } /* Slightly wider gap */
 
-        /* Button/Dropdown Styling */
-        header select, header button { 
-            padding: 7px 12px; 
-            border: 1px solid var(--border-color); 
+        /* Button/Dropdown Styling (General) */
+        header select,
+        header button {
+            padding: 7px 12px;
+            border: 1px solid var(--border-color);
             border-radius: 6px; /* Smoother corners */
-            cursor: pointer; 
-            font-size: 14px; 
+            cursor: pointer;
+            font-size: 14px;
             font-weight: 500;
             white-space: nowrap; /* Prevent wrapping */
 
             /* Use theme variables for controls */
-            background-color: var(--control-bg); 
+            background-color: var(--control-bg);
             /* Use control text color defined for dark headers, fallback to main text color */
-            color: var(--header-control-text, var(--text-color)); 
-            transition: background-color 0.2s, border-color 0.2s, transform 0.1s; 
+            color: var(--header-control-text, var(--text-color));
+            transition: background-color 0.2s, border-color 0.2s, transform 0.1s, color 0.2s; /* Added color transition */
         }
 
-        header button:hover { 
-            background-color: var(--control-hover-bg); 
+        header button:hover {
+            background-color: var(--control-hover-bg);
             border-color: var(--accent-color);
+            color: var(--control-hover-text, var(--header-control-text, var(--text-color))); /* Use hover text color if defined */
             transform: translateY(-1px); /* Slight lift */
         }
-        
-        header select { 
+
+        header button:active { /* New: Click state */
+            background-color: var(--control-active-bg);
+            border-color: var(--accent-color);
+            transform: translateY(0); /* Press effect */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); /* Inner shadow for depth */
+            color: var(--control-hover-text, var(--header-control-text, var(--text-color))); /* Keep hover text color on active */
+        }
+
+        header select {
             /* Ensure select uses background variables but looks distinct */
-            border-color: var(--panel-border); 
+            border-color: var(--panel-border);
             min-width: 150px;
         }
         header select:hover {
             border-color: var(--accent-color);
         }
-        header select option { 
-            background-color: var(--editor-bg); 
-            color: var(--text-color); 
+        header select option {
+            background-color: var(--editor-bg);
+            color: var(--text-color);
         }
-        
+
         /* Special Button for Markdown Tags (Slightly more compact) */
-        .markdown-control { 
-            font-weight: bold; 
-            padding: 7px 10px; 
+        .markdown-control {
+            font-weight: bold;
+            padding: 7px 10px;
             min-width: 35px;
             text-align: center;
         }
-        
+
         /* Custom Color Pickers */
-        .color-picker-label { 
-            margin-left: 5px; 
-            font-size: 13px; 
-            display: flex; 
-            align-items: center; 
-            gap: 5px; 
+        .color-picker-label {
+            margin-left: 5px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
             border: 1px solid var(--border-color);
             padding: 5px 8px;
             border-radius: 6px;
@@ -268,22 +308,22 @@
             /* Use control text color for contrast */
             color: var(--header-control-text, var(--text-color));
         }
-        .color-picker-label input[type="color"] { 
+        .color-picker-label input[type="color"] {
             border: 1px solid var(--panel-border); /* subtle border */
-            padding: 0; 
+            padding: 0;
             width: 20px; /* slightly smaller */
-            height: 20px; 
-            background: none; 
-            cursor: pointer; 
+            height: 20px;
+            background: none;
+            cursor: pointer;
             border-radius: 4px;
         }
-        
+
         /* File Name Input */
-        #file-name-input { 
-            border: none; 
-            background: transparent; 
+        #file-name-input {
+            border: none;
+            background: transparent;
             /* Use header-control-text for high contrast in header, or fallback to text-color */
-            color: var(--header-control-text, var(--text-color)); 
+            color: var(--header-control-text, var(--text-color));
             font-weight: 600; /* Medium bold */
             font-size: 20px; /* Slightly larger */
             margin-right: 20px;
@@ -294,72 +334,165 @@
         #file-name-input:focus {
             outline: none;
             /* Subtle indication that it's active */
-            box-shadow: 0 1px 0 var(--link-color); 
+            box-shadow: 0 1px 0 var(--link-color);
+        }
+
+        /* --- FIND AND REPLACE STYLING IMPROVEMENTS --- */
+        .find-replace-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border-color);
+            padding: 5px 8px;
+            border-radius: 6px;
+            background-color: var(--control-bg);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow to make it pop slightly */
+            transition: background-color var(--transition-speed), border-color var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        .find-replace-group input[type="text"] {
+            /* Now explicitly style as an input, not just text */
+            padding: 7px 10px; /* Internal padding for inputs */
+            border: 1px solid var(--panel-border); /* Subtle border for inputs */
+            border-radius: 4px; /* Slightly smaller radius for inputs within group */
+            background-color: var(--editor-bg); /* Use editor-bg for input background */
+            color: var(--text-color); /* General text color for input values */
+            font-size: 14px;
+            width: 120px; /* Fixed width on desktop, can be wider */
+            transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .find-replace-group input[type="text"]::placeholder {
+            color: var(--text-color);
+            opacity: 0.6;
+        }
+
+        .find-replace-group input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-color); /* Highlight border on focus */
+            box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb, 59, 130, 246), 0.2); /* Subtle glow */
+        }
+
+        /* Specific styles for find/replace buttons */
+        .find-replace-group button {
+            padding: 6px 10px; /* Slightly more compact buttons */
+            font-size: 13px; /* Slightly smaller font */
+            min-width: auto;
+            border-radius: 4px;
+        }
+
+        /* Emphasize Replace and Replace All buttons */
+        #replace-button, #replace-all-button {
+            background-color: var(--accent-color);
+            color: var(--header-bg); /* Text contrasts with accent */
+            border-color: var(--accent-color);
+        }
+
+        #replace-button:hover, #replace-all-button:hover {
+            background-color: color-mix(in srgb, var(--accent-color) 85%, black); /* Slightly darker accent on hover */
+            color: var(--header-bg);
+        }
+
+        #replace-button:active, #replace-all-button:active {
+            background-color: color-mix(in srgb, var(--accent-color) 70%, black); /* Even darker on active */
+        }
+
+        /* Style for the close button */
+        #close-find-replace-button {
+            background: transparent;
+            border: none;
+            color: var(--text-color); /* Default text color, not accent */
+            font-weight: normal;
+            font-size: 16px;
+            padding: 4px 8px; /* More compact */
+        }
+
+        #close-find-replace-button:hover {
+            background-color: var(--control-hover-bg);
+            border-color: transparent;
+            color: var(--accent-color);
+            transform: none; /* No lift for close button */
+        }
+
+        #close-find-replace-button:active {
+            background-color: var(--control-active-bg);
+            color: var(--accent-color);
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Find Status Text */
+        #find-status {
+            margin-left: 5px;
+            color: var(--accent-color);
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
         }
 
         /* --- FIX: Switch to Dual Scrollbar Layout --- */
-        main { 
-            display: flex; 
-            flex-grow: 1; 
+        main {
+            display: flex;
+            flex-grow: 1;
             overflow-y: hidden; /* Main no longer scrolls */
             overflow-x: hidden;
-            height: 100%; 
+            height: 100%;
         }
 
-        .panel { 
-            flex: 1; 
-            padding: 0; 
-            box-sizing: border-box; 
+        .panel {
+            flex: 1;
+            padding: 0;
+            box-sizing: border-box;
             min-width: 0;
-            height: 100%; 
+            height: 100%;
             overflow-y: auto; /* Panels are independently scrollable */
-            position: relative; 
+            position: relative;
             transition: background-color var(--transition-speed);
-        } 
-        
+        }
+
         /* 3. Editor/Preview Styles (Using V-Code inspired large padding area) */
-        #editor { 
-            width: 100%; 
-            height: 100%; 
-            border: none; 
-            resize: none; 
-            font-family: var(--editor-font); 
-            font-size: 15px; 
+        #editor {
+            width: 100%;
+            height: 100%;
+            border: none;
+            resize: none;
+            font-family: var(--editor-font);
+            font-size: 15px;
             line-height: 1.7; /* Increased line height for readability */
-            outline: none; 
+            outline: none;
             padding: 30px 20px; /* Larger padding for minimal look */
-            box-sizing: border-box; 
-            overflow: auto; 
-            
-            background-color: var(--editor-bg); 
-            color: var(--text-color); 
-            caret-color: var(--link-color); 
-            
-            display: block; 
+            box-sizing: border-box;
+            overflow: auto;
+
+            background-color: var(--editor-bg);
+            color: var(--text-color);
+            caret-color: var(--link-color);
+
+            display: block;
             transition: background-color var(--transition-speed), color var(--transition-speed);
         }
 
         /* We also need to ensure its parent container respects the flex boundaries. */
-        #editor-container { 
-            border-right: 1px solid var(--panel-border); 
+        #editor-container {
+            border-right: 1px solid var(--panel-border);
             background-color: var(--editor-bg);
-            padding: 0; 
+            padding: 0;
         }
-        #preview { 
-            background-color: var(--preview-bg); 
-            font-family: var(--content-font); 
+        #preview {
+            background-color: var(--preview-bg);
+            font-family: var(--content-font);
             padding: 30px 20px; /* Match editor padding */
             transition: background-color var(--transition-speed), color var(--transition-speed);
         }
-        
+
         /* Preview Styling for Accuracy and Beauty */
         #preview a { color: var(--link-color); text-decoration: none; border-bottom: 1px dotted var(--link-color); transition: color 0.2s; }
         #preview a:hover { color: var(--accent-color); border-bottom: 1px solid var(--accent-color); }
 
-        #preview h1, #preview h2, #preview h3, #preview h4 { 
-            color: var(--link-color); 
-            padding-bottom: 5px; 
-            margin-top: 2em; 
+        #preview h1, #preview h2, #preview h3, #preview h4 {
+            color: var(--link-color);
+            padding-bottom: 5px;
+            margin-top: 2em;
             font-family: var(--heading-font);
             font-weight: 700;
             line-height: 1.2;
@@ -370,17 +503,17 @@
         #preview h4 { font-size: 1.2em; }
 
         #preview p { margin-bottom: 1em; } /* Increase paragraph spacing */
-        
-        #preview pre { 
-            background-color: var(--code-bg); 
-            padding: 15px; 
-            border-radius: 6px; 
-            overflow-x: auto; 
-            font-size: 0.85em; 
+
+        #preview pre {
+            background-color: var(--code-bg);
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.85em;
             line-height: 1.5;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle elevation */
         }
-        
+
         #preview code {
             background-color: var(--code-bg);
             padding: 2px 5px;
@@ -389,40 +522,40 @@
             font-size: 0.9em;
         }
 
-        #preview blockquote { 
-            border-left: 5px solid var(--link-color); 
-            padding: 15px 20px; 
-            margin: 20px 0; 
-            font-style: italic; 
+        #preview blockquote {
+            border-left: 5px solid var(--link-color);
+            padding: 15px 20px;
+            margin: 20px 0;
+            font-style: italic;
             background-color: var(--blockquote-bg); /* Using new themed variable */
             border-radius: 4px;
         }
-        
-        #preview table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 1.5em 0; 
-            background-color: var(--editor-bg); 
+
+        #preview table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+            background-color: var(--editor-bg);
             border: 1px solid var(--panel-border);
             border-radius: 4px;
             overflow: hidden; /* For rounded corners on the table */
         }
-        #preview th, #preview td { 
-            border: 1px solid var(--panel-border); 
-            padding: 12px 15px; 
-            text-align: left; 
+        #preview th, #preview td {
+            border: 1px solid var(--panel-border);
+            padding: 12px 15px;
+            text-align: left;
         }
-        #preview th { 
-            background-color: var(--code-bg); 
-            font-weight: 600; 
+        #preview th {
+            background-color: var(--code-bg);
+            font-weight: 600;
             color: var(--text-color);
         }
-        
-        #preview ul, #preview ol { 
-            margin-left: 20px; 
-            padding-left: 0; 
+
+        #preview ul, #preview ol {
+            margin-left: 20px;
+            padding-left: 0;
         }
-        
+
         .katex { color: var(--text-color); }
 
         /* Status Bar & Action Log */
@@ -446,7 +579,7 @@
             font-weight: 600;
             transition: opacity 0.3s;
         }
-        
+
         /* --- PRINT CSS (For High Quality PDF Export) --- */
         @page {
             size: A4;
@@ -499,7 +632,7 @@
             #preview h1, #preview h2, #preview h3 { border-bottom-color: var(--panel-border) !important; color: var(--link-color) !important; }
             #preview a { color: var(--link-color) !important; }
             .katex { color: inherit !important; }
-            
+
             * {
                 box-shadow: none !important;
                 text-shadow: none !important;
@@ -515,12 +648,12 @@
 
             .panel {
                 /* Let panels equally divide the remaining vertical space */
-                flex: 1 1 50%; 
+                flex: 1 1 50%;
                 width: 100%;
                 height: auto; /* Critical: Allow flex to manage height instead of fixed vh */
-                padding: 0; 
+                padding: 0;
             }
-            
+
             #editor, #preview {
                 padding: 15px; /* Consistent mobile padding */
             }
@@ -530,25 +663,25 @@
                 /* Add a thicker horizontal separator for better mobile distinction */
                 border-bottom: 3px solid var(--panel-border);
             }
-            
+
             /* 2. Header: Stack control groups */
             header {
                 flex-direction: column;
                 align-items: flex-start;
-                padding: 10px 15px;
-                gap: 10px;
+                padding: 10px 15px; /* Adjust padding */
+                gap: 10px; /* Vertical gap between control groups */
             }
-            
+
             .control-group {
                 width: 100%;
                 margin-top: 0;
-                flex-wrap: wrap; 
+                flex-wrap: wrap; /* Allow items within the group to wrap */
                 justify-content: flex-start;
-                gap: 8px;
+                gap: 8px; /* Gap between items within a group */
             }
 
             #file-name-input {
-                width: 100%; 
+                width: 100%;
                 margin-right: 0;
                 margin-bottom: 0;
                 font-size: 18px;
@@ -563,7 +696,7 @@
             header select {
                 min-width: 120px;
             }
-            
+
             /* Hide non-essential color pickers on small screens to save space */
             .color-picker-label {
                 display: none;
@@ -571,8 +704,35 @@
 
             /* Show color pickers if they are the only controls left or if there's enough space */
             .control-group:last-of-type .color-picker-label {
-                 /* If space permits, show them on smaller tablets */
                  display: flex;
+            }
+
+            /* --- Find/Replace Specific Mobile Fixes --- */
+            .find-replace-group {
+                width: 100%; /* Take full width like other control groups */
+                justify-content: flex-start;
+                align-items: center;
+                padding: 5px;
+                gap: 5px;
+            }
+
+            .find-replace-group input[type="text"] {
+                flex-grow: 1; /* Allow inputs to expand */
+                width: auto; /* Override fixed width */
+                min-width: 50px;
+                font-size: 13px;
+                padding: 6px 8px;
+                border: 1px solid var(--border-color); /* Ensure visible border on mobile */
+            }
+
+            .find-replace-group button {
+                flex-shrink: 0;
+                font-size: 12px;
+                padding: 5px 8px;
+            }
+            /* Adjust close button for better mobile appearance */
+            #close-find-replace-button {
+                padding: 5px 8px;
             }
 
             /* 3. Status Bar: Stack stats vertically on smaller screens */
@@ -588,12 +748,12 @@
     </style>
 </head>
 <body>
-
+    <!-- (Header and Main content remains the same, except for new status-bar span) -->
     <header>
         <div class="control-group">
             <input type="text" id="file-name-input" value="My New Document">
         </div>
-        
+
         <!-- MARKDOWN EDITOR CONTROLS -->
         <div class="control-group">
             <button class="markdown-control" onclick="insertMarkdownTag('**','**', 'bold text')" title="Bold (Ctrl+B)">B</button>
@@ -604,7 +764,7 @@
             <button class="markdown-control" onclick="insertMarkdownTag('```javascript\n', '\n```', 'console.log(\'Block\')')" title="Code Block">{}</button>
             <button class="markdown-control" onclick="insertMarkdownTag('[','(http://link.com)', 'Link Text')" title="Insert Link">Link</button>
         </div>
-        
+
         <!-- THEME & FONT CUSTOMIZATION -->
         <div class="control-group">
             <select id="theme-select" onchange="applyTheme(this.value)" title="Choose a global color scheme">
@@ -679,6 +839,19 @@
             <input type="file" id="file-upload" style="display: none;" onchange="handleImport(event)">
             <button onclick="document.getElementById('file-upload').click()" title="Load file into editor">Import</button>
             <button onclick="resetApplication()" title="Clear saved content, themes, and settings.">Reset App</button>
+            <button id="toggle-find-replace-button" title="Find and Replace (Ctrl+F)">Search</button>
+        </div>
+
+        <!-- FIND & REPLACE CONTROLS - Initially hidden -->
+        <div class="control-group find-replace-group hidden">
+            <input type="text" id="find-input" placeholder="Find..." title="Text to find (Ctrl+F)">
+            <input type="text" id="replace-input" placeholder="Replace with..." title="Text to replace with">
+            <button id="find-prev-button" title="Find previous occurrence (Shift+Enter)">Prev</button>
+            <button id="find-next-button" title="Find next occurrence (Enter)">Next</button>
+            <button id="swap-find-replace-button" title="Swap Find and Replace inputs (Ctrl+Shift+S)">⇄</button>
+            <button id="replace-button" title="Replace current occurrence">Replace</button>
+            <button id="replace-all-button" title="Replace all occurrences (Ctrl+Shift+H)">Replace All</button>
+            <button id="close-find-replace-button" title="Close (Esc)">✕</button>
         </div>
     </header>
 
@@ -693,7 +866,7 @@
             <!-- Content injected by JavaScript -->
         </div>
     </main>
-    
+
     <!-- Status Bar -->
     <footer id="status-bar">
         <span id="action-log">Ready.</span>
@@ -701,17 +874,30 @@
             <span id="char-count">Characters: 0</span>
             <span id="word-count">Words: 0</span>
             <span id="line-count">Lines: 0</span>
+            <span id="find-status"></span> <!-- Added for find/replace status -->
         </div>
     </footer>
 
-    <!-- Embedded JavaScript -->
+    <!-- (Your JavaScript remains the same, no changes needed for this specific request in JS) -->
     <script>
         const editor = document.getElementById('editor');
         const preview = document.getElementById('preview');
         const fileNameInput = document.getElementById('file-name-input');
         const actionLog = document.getElementById('action-log');
-        const main = document.querySelector('main');
-        
+
+        // Find & Replace elements
+        const toggleFindReplaceButton = document.getElementById('toggle-find-replace-button');
+        const findReplaceGroup = document.querySelector('.find-replace-group');
+        const findInput = document.getElementById('find-input');
+        const replaceInput = document.getElementById('replace-input');
+        const findPrevButton = document.getElementById('find-prev-button');
+        const findNextButton = document.getElementById('find-next-button');
+        const replaceButton = document.getElementById('replace-button');
+        const replaceAllButton = document.getElementById('replace-all-button');
+        const closeFindReplaceButton = document.getElementById('close-find-replace-button');
+        const findStatus = document.getElementById('find-status');
+        const swapFindReplaceButton = document.getElementById('swap-find-replace-button');
+
         // Storage Keys
         const STORAGE_KEY = 'zenwrite_content';
         const FILENAME_KEY = 'zenwrite_filename';
@@ -719,10 +905,10 @@
         const FONT_KEY = 'zenwrite_font';
         const COLOR_TEXT_KEY = 'zenwrite_color_text';
         const COLOR_BG_KEY = 'zenwrite_color_bg';
-        
+
         // --- Synchronization Flag ---
         let isSyncing = false;
-        
+
         // --- Initial Markdown Template ---
         const WELCOME_TEMPLATE = `# Welcome to ZenWrite: Fully Customizable Markdown Studio
 
@@ -737,11 +923,11 @@ Use the header controls to choose a preset theme, or override it instantly with 
 ZenWrite handles complex technical notation with ease, supporting both standard Markdown \$\$...\$\$ and LaTeX delimiters.
 
 Display Math (\$\$...\$\$ or \\\[...\\\]):
-$$ 
-\mathbf{E} = \frac{1}{4\pi\varepsilon_0} \sum_{i=1}^n \frac{q_i}{|\mathbf{r}-\mathbf{r}_i|^2} \hat{\mathbf{r}}_i
+$$
+\\mathbf{E} = \\frac{1}{4\\pi\\varepsilon_0} \\sum_{i=1}^n \\frac{q_i}{|\\mathbf{r}-\\mathbf{r}_i|^2} \\hat{\\mathbf{r}}_i
 $$
 
-Inline Math (\$...\$ or \\(...\\)): The equation \\(a^2 + b^2 = c^2\\) is rendered inline, alongside $E=mc^2$.
+Inline Math (\\$...\\$ or \\\\(...\\\\)): The equation \\(a^2 + b^2 = c^2\\) is rendered inline, alongside $E=mc^2$.
 
 ### 3. High Quality Export
 The **High Quality PDF (via Print)** option uses your browser's native print engine for perfect, scalable output.
@@ -764,9 +950,9 @@ function calculate_score(team_data) {
 }
 \`\`\`
 `;
-        
+
         // --- Marked & KaTeX Configuration ---
-        
+
         marked.setOptions({
             renderer: new marked.Renderer(),
             highlight: (code, lang) => {
@@ -783,11 +969,15 @@ function calculate_score(team_data) {
             console.log(`[ZenWrite Action] ${message}`);
             actionLog.textContent = message;
             actionLog.style.opacity = 1;
-            
+
             // Clear the status message after 2.5 seconds
             clearTimeout(window.logTimeout);
             window.logTimeout = setTimeout(() => {
                 actionLog.style.opacity = 0;
+                // Optionally clear find-status too if it's related to the action
+                if (!findInput.value && !replaceInput.value) {
+                    findStatus.textContent = '';
+                }
             }, 2500);
         }
 
@@ -804,7 +994,7 @@ function calculate_score(team_data) {
             const maxSourceScroll = source.scrollHeight - source.clientHeight;
             if (maxSourceScroll > 0) {
                 const scrollRatio = source.scrollTop / maxSourceScroll;
-                
+
                 // Apply the same ratio to the target panel
                 const maxTargetScroll = target.scrollHeight - target.clientHeight;
                 target.scrollTop = scrollRatio * maxTargetScroll;
@@ -815,12 +1005,12 @@ function calculate_score(team_data) {
                 isSyncing = false;
             });
         }
-        
-        let editorContentLength = 0; 
+
+        let editorContentLength = 0;
 
         function updatePreview() {
             const markdown = editor.value;
-            editorContentLength = markdown.length; 
+            editorContentLength = markdown.length;
             try {
                 const html = marked.parse(markdown);
                 preview.innerHTML = html;
@@ -848,7 +1038,7 @@ function calculate_score(team_data) {
                 preview.innerHTML = `<p style="color: red;">Markdown Rendering Error: ${e.message}</p>`;
                 logAction('Rendering failed due to error.');
             }
-            
+
             updateStatus(markdown);
             saveContent();
         }
@@ -874,7 +1064,7 @@ function calculate_score(team_data) {
             // If user hasn't changed the default name, try to extract from content
             if (!name || name === defaultName) {
                 const markdown = editor.value.trim();
-                
+
                 // 1. Try to find first H1
                 const h1Match = markdown.match(/^#\s+(.+)$/m);
                 if (h1Match) {
@@ -904,16 +1094,16 @@ function calculate_score(team_data) {
             localStorage.setItem(STORAGE_KEY, editor.value);
             localStorage.setItem(FILENAME_KEY, fileNameInput.value);
         }
-        
+
         // --- Customization Functions ---
 
         function applyTheme(themeName) {
-            document.body.className = ''; 
+            document.body.className = '';
             if (themeName !== 'default') {
                 document.body.classList.add(`theme-${themeName}`);
             }
             localStorage.setItem(THEME_KEY, themeName);
-            
+
             // Set heading font default if not explicitly set by font-select (Reset to theme default)
             const themeHeadingFonts = {
                 'luxury': "'Playfair Display', serif",
@@ -923,16 +1113,30 @@ function calculate_score(team_data) {
                 'brutalist': "'Archivo Black', sans-serif",
                 'sepia': "'Lora', serif"
             };
-            
+
             if (themeHeadingFonts[themeName]) {
                 document.documentElement.style.setProperty('--heading-font', themeHeadingFonts[themeName]);
             } else {
                 document.documentElement.style.setProperty('--heading-font', 'var(--content-font)');
             }
 
+            // Extract RGB values for custom color glow on input focus (if supported)
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
+            const match = accentColor.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+            if (match) {
+                const r = parseInt(match[1], 16);
+                const g = parseInt(match[2], 16);
+                const b = parseInt(match[3], 16);
+                document.documentElement.style.setProperty('--accent-color-rgb', `${r}, ${g}, ${b}`);
+            } else {
+                 // Fallback if accent color is not hex, or for themes without custom RGB
+                document.documentElement.style.setProperty('--accent-color-rgb', '59, 130, 246');
+            }
+
+
             logAction(`Theme set to ${themeName}.`);
-            loadCustomColors(); 
-            updatePreview(); 
+            loadCustomColors();
+            updatePreview();
         }
 
         function applyFont(font) {
@@ -973,14 +1177,14 @@ function calculate_score(team_data) {
                 document.documentElement.style.setProperty('--preview-bg', savedBg);
             }
         }
-        
+
         // --- Markdown Insertion Helper ---
 
         function insertMarkdownTag(startTag, endTag = '', defaultText = '') {
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
             const selectedText = editor.value.substring(start, end);
-            
+
             let replacement = selectedText.length > 0
                 ? `${startTag}${selectedText}${endTag}`
                 : `${startTag}${defaultText}${endTag}`;
@@ -988,29 +1192,246 @@ function calculate_score(team_data) {
             editor.value = editor.value.substring(0, start) + replacement + editor.value.substring(end);
 
             editor.focus();
-            
+
             let newCursorPos = start + startTag.length + (selectedText.length > 0 ? selectedText.length : defaultText.length);
-            
+
             if (startTag.endsWith('\n')) {
                 newCursorPos = start + replacement.length;
             }
-            
+
             editor.selectionStart = newCursorPos;
             editor.selectionEnd = newCursorPos;
-            
+
             updatePreview();
             logAction(`Inserted markdown tag: ${startTag.trim()}`);
         }
 
+        // --- Find and Replace Feature ---
+        let currentMatchIndex = 0; // To keep track of the current highlighted match
+        let lastSearchTerm = '';
+        let matches = [];
+
+        function toggleFindReplacePanel(focusInput = 'find') {
+            findReplaceGroup.classList.toggle('hidden');
+            if (!findReplaceGroup.classList.contains('hidden')) {
+                // Panel is shown
+                if (focusInput === 'find') {
+                    findInput.focus();
+                    findInput.select();
+                } else if (focusInput === 'replace') {
+                    replaceInput.focus();
+                    replaceInput.select();
+                }
+                findText(false); // Perform initial find without selecting, just to get match count
+                logAction('Find/Replace panel opened.');
+            } else {
+                // Panel is hidden
+                clearFindHighlighting();
+                logAction('Find/Replace panel closed.');
+            }
+        }
+
+        function clearFindHighlighting() {
+            editor.setSelectionRange(editor.selectionStart, editor.selectionStart); // Clear selection
+            matches = [];
+            currentMatchIndex = 0;
+            lastSearchTerm = '';
+            findStatus.textContent = '';
+        }
+
+        function findText(selectMatch = true) {
+            const searchTerm = findInput.value;
+            const content = editor.value;
+
+            findStatus.textContent = ''; // Clear previous status
+
+            if (!searchTerm) {
+                matches = [];
+                logAction('Enter text to find.');
+                return;
+            }
+
+            // If the search term has changed, or there were no matches previously, re-calculate matches
+            if (searchTerm !== lastSearchTerm || matches.length === 0) {
+                const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
+                matches = [...content.matchAll(regex)];
+                currentMatchIndex = 0; // Reset index when a new search is performed
+            }
+
+            if (matches.length === 0) {
+                logAction(`"${searchTerm}" not found.`);
+                findStatus.textContent = `0 matches`;
+                return;
+            }
+
+            lastSearchTerm = searchTerm; // Store the last search term
+
+            logAction(`${matches.length} occurrences of "${searchTerm}" found.`);
+
+            if (selectMatch) {
+                highlightMatch(currentMatchIndex);
+                findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
+            } else {
+                findStatus.textContent = `${matches.length} matches`;
+            }
+        }
+
+        function findNext() {
+            // Ensure matches are up-to-date for the current search term
+            if (findInput.value !== lastSearchTerm || matches.length === 0) {
+                findText(false); // Re-run find if necessary, but don't auto-select
+                if (matches.length === 0) return;
+            }
+            if (matches.length === 0) return;
+
+            currentMatchIndex = (currentMatchIndex + 1) % matches.length;
+            highlightMatch(currentMatchIndex);
+            findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
+            logAction(`Moved to next match.`);
+        }
+
+        function findPrevious() {
+            // Ensure matches are up-to-date for the current search term
+            if (findInput.value !== lastSearchTerm || matches.length === 0) {
+                findText(false); // Re-run find if necessary, but don't auto-select
+                if (matches.length === 0) return;
+            }
+            if (matches.length === 0) return;
+
+            currentMatchIndex = (currentMatchIndex - 1 + matches.length) % matches.length;
+            highlightMatch(currentMatchIndex);
+            findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
+            logAction(`Moved to previous match.`);
+        }
+
+
+        function highlightMatch(index) {
+            if (matches.length === 0 || index < 0 || index >= matches.length) return;
+
+            const match = matches[index];
+            editor.focus();
+            editor.setSelectionRange(match.index, match.index + match[0].length); // Select the matched text
+
+            // Scroll to the selected text (behavior varies by browser, but generally works)
+            editor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function swapFindReplace() {
+            const temp = findInput.value;
+            findInput.value = replaceInput.value;
+            replaceInput.value = temp;
+            findInput.focus();
+            logAction('Swapped Find and Replace inputs.');
+        }
+
+        function replaceCurrent() {
+            const searchTerm = findInput.value;
+            const replaceTerm = replaceInput.value;
+
+            if (!searchTerm || matches.length === 0 || currentMatchIndex === -1) {
+                logAction('No text to replace or no match selected.');
+                return;
+            }
+
+            const match = matches[currentMatchIndex];
+            const content = editor.value;
+
+            // Perform replacement only at the current match's position
+            const newContent = content.substring(0, match.index) + replaceTerm + content.substring(match.index + match[0].length);
+
+            editor.value = newContent;
+
+            // Re-find to update match positions and highlighting after replacement
+            // This is crucial because string length might change, invalidating old match indices
+            findText(false); // Don't auto-select first match after replace, just update internal matches array
+
+            // After replacement, move to the next match (or the first if it was the last)
+            if (matches.length > 0) {
+                currentMatchIndex = currentMatchIndex % matches.length; // Adjust if current index is now out of bounds
+                highlightMatch(currentMatchIndex);
+                findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
+            } else {
+                clearFindHighlighting();
+            }
+
+            updatePreview(); // Update preview after content change
+            logAction(`Replaced current occurrence of "${searchTerm}".`);
+        }
+
+        function replaceAll() {
+            const searchTerm = findInput.value;
+            const replaceTerm = replaceInput.value;
+            let content = editor.value;
+
+            if (!searchTerm) {
+                logAction('Enter text to find before replacing.');
+                return;
+            }
+
+            // Using global regex for replacement
+            const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
+            const newContent = content.replace(regex, replaceTerm);
+
+            if (content === newContent) {
+                logAction(`"${searchTerm}" not found, no replacements made.`);
+                findStatus.textContent = `0 replacements`;
+                return;
+            }
+
+            const replacementsMade = (content.match(regex) || []).length;
+
+            editor.value = newContent;
+            updatePreview();
+            logAction(`${replacementsMade} occurrences of "${searchTerm}" replaced.`);
+            findStatus.textContent = `${replacementsMade} replacements`;
+            clearFindHighlighting(); // Clear matches after replacement
+            editor.focus();
+        }
+
+        // Helper function to escape special characters for RegExp
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+        }
+
         // --- Keyboard Shortcuts ---
         document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey || e.metaKey) {
+            const isCtrlOrCmd = e.ctrlKey || e.metaKey; // Ctrl for Windows/Linux, Cmd for Mac
+            const isShift = e.shiftKey;
+
+            // Markdown shortcuts
+            if (isCtrlOrCmd) {
                 if (e.key === 'b') {
                     e.preventDefault();
                     insertMarkdownTag('**','**', 'bold text');
                 } else if (e.key === 'i') {
                     e.preventDefault();
                     insertMarkdownTag('*','*', 'italic text');
+                } else if (isShift && e.key === 's') { // Ctrl+Shift+S for Swap Find/Replace
+                    e.preventDefault();
+                    swapFindReplace();
+                }
+            }
+
+            // Find & Replace shortcuts
+            if (isCtrlOrCmd && e.key === 'f') { // Ctrl+F for Find
+                e.preventDefault();
+                toggleFindReplacePanel('find');
+            } else if (isCtrlOrCmd && e.key === 'h') { // Ctrl+H for Replace
+                e.preventDefault();
+                toggleFindReplacePanel('replace');
+            } else if (e.key === 'Escape' && !findReplaceGroup.classList.contains('hidden')) { // Esc to close find/replace
+                e.preventDefault();
+                toggleFindReplacePanel(); // Toggles to close
+                editor.focus(); // Return focus to editor
+            } else if (e.target === findInput || e.target === replaceInput) {
+                // Enter key behavior in find/replace inputs
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (isShift) {
+                        findPrevious();
+                    } else {
+                        findNext();
+                    }
                 }
             }
         });
@@ -1053,15 +1474,15 @@ function calculate_score(team_data) {
 
         async function handleExport(format) {
             const sanitizedName = generateFileName();
-            
+
             document.getElementById('export-select').value = ""; // Reset dropdown
 
             switch (format) {
                 case 'pdf':
                     const originalTitle = document.title;
-                    document.title = sanitizedName; 
+                    document.title = sanitizedName;
                     logAction(`Preparing High Quality PDF...`);
-                    
+
                     // Ensure fonts are loaded before printing
                     if (document.fonts) {
                         try {
@@ -1072,7 +1493,7 @@ function calculate_score(team_data) {
                     }
 
                     window.print();
-                    
+
                     setTimeout(() => {
                         document.title = originalTitle;
                         logAction(`PDF export triggered for ${sanitizedName}.pdf`);
@@ -1089,7 +1510,7 @@ function calculate_score(team_data) {
                     break;
             }
         }
-        
+
         function exportTextFile(format, filename) {
             const content = editor.value;
             let exportData = content;
@@ -1167,7 +1588,7 @@ markdown_content: |
             // 1. Load content
             const savedContent = localStorage.getItem(STORAGE_KEY);
             editor.value = savedContent !== null ? savedContent : WELCOME_TEMPLATE;
-            
+
             // 2. Load filename
             const savedFilename = localStorage.getItem(FILENAME_KEY);
             if (savedFilename) {
@@ -1180,10 +1601,10 @@ markdown_content: |
             if (themeSelect.querySelector(`option[value="${savedTheme}"]`)) {
                 themeSelect.value = savedTheme;
             }
-            applyTheme(themeSelect.value); 
-            
+            applyTheme(themeSelect.value);
+
             // 4. Load font
-            const savedFont = localStorage.getItem(FONT_KEY) || 'Segoe UI';
+            const savedFont = localStorage.getItem(FONT_KEY) || 'Inter'; // Default to Inter
             const fontSelect = document.getElementById('font-select');
             if (fontSelect.querySelector(`option[value="${savedFont}"]`)) {
                 fontSelect.value = savedFont;
@@ -1197,6 +1618,31 @@ markdown_content: |
             editor.addEventListener('scroll', () => syncScroll(editor, preview));
             preview.addEventListener('scroll', () => syncScroll(preview, editor));
 
+            // 7. Setup Find & Replace listeners
+            toggleFindReplaceButton.addEventListener('click', () => toggleFindReplacePanel('find'));
+            closeFindReplaceButton.addEventListener('click', () => toggleFindReplacePanel());
+            findPrevButton.addEventListener('click', findPrevious);
+            findNextButton.addEventListener('click', findNext);
+            replaceButton.addEventListener('click', replaceCurrent);
+            replaceAllButton.addEventListener('click', replaceAll);
+            swapFindReplaceButton.addEventListener('click', swapFindReplace);
+
+            findInput.addEventListener('input', () => { // When user types in find box, re-evaluate matches
+                // If the search term is empty, clear matches and status
+                if (!findInput.value) {
+                    clearFindHighlighting();
+                    return;
+                }
+                // Re-run findText if the content of the input actually changed from the last search
+                // Or if there were no matches and now there might be (e.g., deleted and re-typed)
+                if (findInput.value !== lastSearchTerm || matches.length === 0) {
+                    findText(false); // Don't auto-select on every input, just show count
+                }
+            });
+
+            // These keydown listeners are now handled by the global document keydown listener
+            // to support Shift+Enter for findPrevious, and consolidate behavior.
+
             // Initial render
             updatePreview();
 
@@ -1205,6 +1651,5 @@ markdown_content: |
 
         initializeApp();
     </script>
-
 </body>
 </html>

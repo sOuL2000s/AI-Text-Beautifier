@@ -627,7 +627,15 @@
             }
 
             /* Elements styling preservation */
-            #preview pre, #preview code { background-color: var(--code-bg) !important; }
+            #preview pre {
+                background-color: var(--code-bg) !important;
+                overflow-x: visible !important; /* Still useful to explicitly prevent scroll */
+                white-space: pre-wrap !important; /* Crucial for wrapping */
+                word-wrap: break-word !important; /* Handle super long words */
+                font-size: 0.8em !important; /* Optionally, slightly smaller font for dense code */
+                line-height: 1.4 !important;
+            }
+            #preview code { background-color: var(--code-bg) !important; }
             #preview blockquote { background-color: var(--blockquote-bg) !important; border-left-color: var(--link-color) !important; }
             #preview h1, #preview h2, #preview h3 { border-bottom-color: var(--panel-border) !important; color: var(--link-color) !important; }
             #preview a { color: var(--link-color) !important; }

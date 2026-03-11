@@ -350,8 +350,9 @@
             transition: background-color var(--transition-speed), border-color var(--transition-speed), box-shadow var(--transition-speed);
         }
 
-        .find-replace-group input[type="text"] {
-            /* Now explicitly style as an input, not just text */
+        .find-replace-group input[type="text"],
+        .find-replace-group textarea { /* Apply common styles to both input and textarea */
+            /* Now explicitly style as an input/textarea, not just text */
             padding: 7px 10px; /* Internal padding for inputs */
             border: 1px solid var(--panel-border); /* Subtle border for inputs */
             border-radius: 4px; /* Slightly smaller radius for inputs within group */
@@ -360,6 +361,15 @@
             font-size: 14px;
             width: 120px; /* Fixed width on desktop, can be wider */
             transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+            resize: none; /* Disable default resize for inputs, let textarea handle it */
+            line-height: 1.5; /* Ensure consistent line height */
+        }
+
+        .find-replace-group textarea {
+            min-height: 34px; /* Match the visual height of a single-line input */
+            max-height: 80px; /* Allow it to grow up to a certain point */
+            overflow-y: auto; /* Enable internal scrolling if content exceeds max-height */
+            resize: vertical; /* Allow vertical resizing by the user */
         }
 
         .find-replace-group input[type="text"]::placeholder {
@@ -724,13 +734,18 @@
                 gap: 5px;
             }
 
-            .find-replace-group input[type="text"] {
+            .find-replace-group input[type="text"],
+            .find-replace-group textarea { /* Apply mobile styles to both input and textarea */
                 flex-grow: 1; /* Allow inputs to expand */
                 width: auto; /* Override fixed width */
                 min-width: 50px;
                 font-size: 13px;
                 padding: 6px 8px;
                 border: 1px solid var(--border-color); /* Ensure visible border on mobile */
+                height: auto; /* Allow textarea to size itself */
+                min-height: 30px; /* Min height for textarea on mobile */
+                max-height: 60px; /* Max height for textarea on mobile */
+                resize: vertical; /* Allow resizing */
             }
 
             .find-replace-group button {
@@ -852,16 +867,23 @@
 
         <!-- FIND & REPLACE CONTROLS - Initially hidden -->
         <div class="control-group find-replace-group hidden">
-            <input type="text" id="find-input" placeholder="Find..." title="Text to find (Ctrl+F)">
-            <input type="text" id="replace-input" placeholder="Replace with..." title="Text to replace with">
+            <textarea id="find-input" placeholder="Find..." title="Text to find (Ctrl+F)" rows="1"></textarea>
+            <textarea id="replace-input" placeholder="Replace with..." title="Text to replace with" rows="1"></textarea>
             <button id="find-prev-button" title="Find previous occurrence (Shift+Enter)">Prev</button>
             <button id="find-next-button" title="Find next occurrence (Enter)">Next</button>
             <button id="swap-find-replace-button" title="Swap Find and Replace inputs (Ctrl+Shift+S)">⇄</button>
             <button id="replace-button" title="Replace current occurrence">Replace</button>
             <button id="replace-all-button" title="Replace all occurrences (Ctrl+Shift+H)">Replace All</button>
+            <button id="clear-find-replace-button" title="Clear Find and Replace fields">Clear</button>
             <button id="close-find-replace-button" title="Close (Esc)">✕</button>
         </div>
     </header>
+
+    <!-- Hidden elements for potential future use or debugging, kept outside main flow -->
+    <div style="display: none;">
+        <button id="undo-button">Undo</button>
+        <button id="redo-button">Redo</button>
+    </div>
 
     <main>
         <!-- Editor Panel is now scrollable -->
@@ -905,6 +927,15 @@
         const closeFindReplaceButton = document.getElementById('close-find-replace-button');
         const findStatus = document.getElementById('find-status');
         const swapFindReplaceButton = document.getElementById('swap-find-replace-button');
+        const clearFindReplaceButton = document.getElementById('clear-find-replace-button'); // Added
+
+        let undoStack = [];
+        let redoStack = [];
+        // `lastCommittedState` tracks the content of the editor as of the last time
+        // a state was added to the undoStack or an undo/redo operation occurred.
+        // It's used to prevent pushing identical states for user input.
+        let lastCommittedState = '';
+        const MAX_UNDO_STACK_SIZE = 100; // Limit undo history to prevent memory issues
 
         // Storage Keys
         const STORAGE_KEY = 'zenwrite_content';
@@ -928,14 +959,14 @@ Start writing clean, structured documents instantly. Use the controls above to c
 Use the header controls to choose a preset theme, or override it instantly with custom colors and fonts.
 
 ### 2. Precise Math Rendering (KaTeX)
-ZenWrite handles complex technical notation with ease, supporting both standard Markdown \$\$...\$\$ and LaTeX delimiters.
+ZenWrite handles complex technical notation with ease, supporting both standard Markdown $$...$$ and LaTeX delimiters.
 
-Display Math (\$\$...\$\$ or \\\[...\\\]):
+Display Math ($$...$$ or \\[...\\]):
 $$
 \\mathbf{E} = \\frac{1}{4\\pi\\varepsilon_0} \\sum_{i=1}^n \\frac{q_i}{|\\mathbf{r}-\\mathbf{r}_i|^2} \\hat{\\mathbf{r}}_i
 $$
 
-Inline Math (\\$...\\$ or \\\\(...\\\\)): The equation \\(a^2 + b^2 = c^2\\) is rendered inline, alongside $E=mc^2$.
+Inline Math ($\\$...$ or \\(...\\)): The equation \\(a^2 + b^2 = c^2\\) is rendered inline, alongside $E=mc^2$.
 
 ### 3. High Quality Export
 The **High Quality PDF (via Print)** option uses your browser's native print engine for perfect, scalable output.
@@ -1016,9 +1047,66 @@ function calculate_score(team_data) {
 
         let editorContentLength = 0;
 
-        function updatePreview() {
+        /**
+         * Commits the current editor state to the undo stack if it's different from the last committed state.
+         * This function is primarily used for handling user input via the 'input' event.
+         * It pushes the *previous* `lastCommittedState` to the stack and updates `lastCommittedState` to the current `editor.value`.
+         */
+        function commitEditorStateForUndo() {
+            if (editor.value !== lastCommittedState) {
+                undoStack.push(lastCommittedState); // Push the previous committed state
+                if (undoStack.length > MAX_UNDO_STACK_SIZE) {
+                    undoStack.shift(); // Remove the oldest state
+                }
+                redoStack = []; // Any new action clears the redo stack
+                lastCommittedState = editor.value; // Update to the new current state
+            }
+        }
+
+        /**
+         * Applies the previous state from the undo stack.
+         */
+        function undo() {
+            if (undoStack.length > 0) {
+                redoStack.push(editor.value); // Save current state to redo stack
+                editor.value = undoStack.pop(); // Restore previous state
+                lastCommittedState = editor.value; // Update last known state after undo
+                updatePreview(false); // Update preview, don't push to undo stack again
+                editor.focus();
+                // Restore cursor position if possible (complex, so for now just end)
+                editor.selectionStart = editor.selectionEnd = editor.value.length;
+                logAction('Undo applied.');
+            } else {
+                logAction('Nothing to undo.');
+            }
+        }
+
+        /**
+         * Applies the next state from the redo stack.
+         */
+        function redo() {
+            if (redoStack.length > 0) {
+                undoStack.push(editor.value); // Save current state to undo stack
+                editor.value = redoStack.pop(); // Restore next state
+                lastCommittedState = editor.value; // Update last known state after redo
+                updatePreview(false); // Update preview, don't push to undo stack again
+                editor.focus();
+                // Restore cursor position if possible
+                editor.selectionStart = editor.selectionEnd = editor.value.length;
+                logAction('Redo applied.');
+            } else {
+                logAction('Nothing to redo.');
+            }
+        }
+
+        // updatePreview now accepts a parameter to optionally skip pushing to undo stack.
+        // This is useful when the call to updatePreview itself is a result of an undo/redo.
+        function updatePreview(pushToUndo = true) {
             const markdown = editor.value;
             editorContentLength = markdown.length;
+            if (pushToUndo) {
+                commitEditorStateForUndo(); // Save current state before potential modification
+            }
             try {
                 const html = marked.parse(markdown);
                 preview.innerHTML = html;
@@ -1210,8 +1298,19 @@ function calculate_score(team_data) {
             editor.selectionStart = newCursorPos;
             editor.selectionEnd = newCursorPos;
 
-            updatePreview();
+            updatePreview(); // This call will internally push state to undo stack
             logAction(`Inserted markdown tag: ${startTag.trim()}`);
+        }
+
+        /**
+         * Clears the find and replace input fields and resets the search status.
+         */
+        function clearFindAndReplaceFields() {
+            findInput.value = '';
+            replaceInput.value = '';
+            clearFindHighlighting();
+            findInput.focus();
+            logAction('Find and Replace fields cleared.');
         }
 
         // --- Find and Replace Feature ---
@@ -1317,11 +1416,43 @@ function calculate_score(team_data) {
             if (matches.length === 0 || index < 0 || index >= matches.length) return;
 
             const match = matches[index];
-            editor.focus();
-            editor.setSelectionRange(match.index, match.index + match[0].length); // Select the matched text
+            const matchStart = match.index;
+            const matchEnd = match.index + match[0].length;
 
-            // Scroll to the selected text (behavior varies by browser, but generally works)
-            editor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            editor.focus();
+            editor.setSelectionRange(matchStart, matchEnd); // Select the matched text
+
+            // Calculate line number of the match start for scrolling
+            const textBefore = editor.value.substring(0, matchStart);
+            const startLineNumber = textBefore.split('\n').length - 1; // 0-indexed line number
+
+            // Get computed style for accurate line height and padding
+            const computedStyle = window.getComputedStyle(editor);
+            const fontSize = parseFloat(computedStyle.fontSize);
+            let actualLineHeight = parseFloat(computedStyle.lineHeight);
+
+            // Handle unitless line-height (e.g., '1.7') or 'normal'
+            if (isNaN(actualLineHeight) || actualLineHeight === 0) {
+                const unitlessLineHeight = parseFloat(computedStyle.lineHeight);
+                if (!isNaN(unitlessLineHeight)) {
+                    actualLineHeight = unitlessLineHeight * fontSize;
+                } else {
+                    actualLineHeight = 1.7 * fontSize; // Fallback to CSS defined ratio
+                }
+            }
+            // Note: paddingTop is less critical for centering a line, but useful for absolute positioning
+            // const paddingTop = parseFloat(computedStyle.paddingTop);
+
+            // Calculate target scrollTop to center the line vertically within the editor's visible area
+            let targetScrollTop = (startLineNumber * actualLineHeight) - (editor.clientHeight / 2) + (actualLineHeight / 2);
+
+            // Ensure scroll position is within valid bounds
+            targetScrollTop = Math.max(0, targetScrollTop);
+            targetScrollTop = Math.min(targetScrollTop, editor.scrollHeight - editor.clientHeight);
+
+            editor.scrollTop = targetScrollTop;
+
+            logAction(`Match ${index + 1} highlighted and scrolled into view.`);
         }
 
         function swapFindReplace() {
@@ -1344,10 +1475,19 @@ function calculate_score(team_data) {
             const match = matches[currentMatchIndex];
             const content = editor.value;
 
+            // For programmatic changes, we explicitly push the current editor state *before* modification.
+            undoStack.push(editor.value);
+            if (undoStack.length > MAX_UNDO_STACK_SIZE) {
+                undoStack.shift();
+            }
+            redoStack = []; // Any new action clears the redo stack
+
             // Perform replacement only at the current match's position
             const newContent = content.substring(0, match.index) + replaceTerm + content.substring(match.index + match[0].length);
 
             editor.value = newContent;
+            // IMPORTANT: After a programmatic change, update lastCommittedState to the new content
+            lastCommittedState = newContent;
 
             // Re-find to update match positions and highlighting after replacement
             // This is crucial because string length might change, invalidating old match indices
@@ -1362,7 +1502,7 @@ function calculate_score(team_data) {
                 clearFindHighlighting();
             }
 
-            updatePreview(); // Update preview after content change
+            updatePreview(false); // Update preview after content change, but don't push to undo stack again
             logAction(`Replaced current occurrence of "${searchTerm}".`);
         }
 
@@ -1376,6 +1516,13 @@ function calculate_score(team_data) {
                 return;
             }
 
+            // For programmatic changes, we explicitly push the current editor state *before* modification.
+            undoStack.push(editor.value);
+            if (undoStack.length > MAX_UNDO_STACK_SIZE) {
+                undoStack.shift();
+            }
+            redoStack = []; // Any new action clears the redo stack
+
             // Using global regex for replacement
             const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
             const newContent = content.replace(regex, replaceTerm);
@@ -1383,13 +1530,19 @@ function calculate_score(team_data) {
             if (content === newContent) {
                 logAction(`"${searchTerm}" not found, no replacements made.`);
                 findStatus.textContent = `0 replacements`;
+                // If no actual change, pop the state we just pushed for this action.
+                undoStack.pop();
+                // lastCommittedState does not need to be reset here; it will correctly reflect
+                // the content before this failed replacement, which is what we want.
                 return;
             }
+            // IMPORTANT: After a programmatic change, update lastCommittedState to the new content
+            lastCommittedState = newContent;
 
             const replacementsMade = (content.match(regex) || []).length;
 
             editor.value = newContent;
-            updatePreview();
+            updatePreview(false); // Update preview, but don't push to undo stack again
             logAction(`${replacementsMade} occurrences of "${searchTerm}" replaced.`);
             findStatus.textContent = `${replacementsMade} replacements`;
             clearFindHighlighting(); // Clear matches after replacement
@@ -1405,6 +1558,31 @@ function calculate_score(team_data) {
         document.addEventListener('keydown', (e) => {
             const isCtrlOrCmd = e.ctrlKey || e.metaKey; // Ctrl for Windows/Linux, Cmd for Mac
             const isShift = e.shiftKey;
+
+            // Undo/Redo shortcuts (global, but prioritize editor if focused)
+            if (isCtrlOrCmd && e.key === 'z') { // Ctrl/Cmd+Z for Undo
+                if (e.target === editor) {
+                    e.preventDefault();
+                    undo();
+                } else if (!findReplaceGroup.classList.contains('hidden') && (e.target === findInput || e.target === replaceInput)) {
+                    // Let browser handle undo for find/replace inputs
+                } else {
+                    // If editor is not focused but active element is not find/replace,
+                    // assume user wants to undo editor changes
+                    e.preventDefault();
+                    undo();
+                }
+            } else if (isCtrlOrCmd && (e.key === 'y' || (isShift && e.key === 'Z'))) { // Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z for Redo
+                 if (e.target === editor) {
+                    e.preventDefault();
+                    redo();
+                } else if (!findReplaceGroup.classList.contains('hidden') && (e.target === findInput || e.target === replaceInput)) {
+                    // Let browser handle redo for find/replace inputs
+                } else {
+                    e.preventDefault();
+                    redo();
+                }
+            }
 
             // Markdown shortcuts
             if (isCtrlOrCmd) {
@@ -1431,7 +1609,7 @@ function calculate_score(team_data) {
                 e.preventDefault();
                 toggleFindReplacePanel(); // Toggles to close
                 editor.focus(); // Return focus to editor
-            } else if (e.target === findInput || e.target === replaceInput) {
+            } else if (document.activeElement === findInput || document.activeElement === replaceInput) { // Use document.activeElement
                 // Enter key behavior in find/replace inputs
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -1596,6 +1774,7 @@ markdown_content: |
             // 1. Load content
             const savedContent = localStorage.getItem(STORAGE_KEY);
             editor.value = savedContent !== null ? savedContent : WELCOME_TEMPLATE;
+            lastCommittedState = editor.value; // Initialize the last committed state for undo/redo logic
 
             // 2. Load filename
             const savedFilename = localStorage.getItem(FILENAME_KEY);
@@ -1634,6 +1813,7 @@ markdown_content: |
             replaceButton.addEventListener('click', replaceCurrent);
             replaceAllButton.addEventListener('click', replaceAll);
             swapFindReplaceButton.addEventListener('click', swapFindReplace);
+            clearFindReplaceButton.addEventListener('click', clearFindAndReplaceFields); // Added listener for clear button
 
             findInput.addEventListener('input', () => { // When user types in find box, re-evaluate matches
                 // If the search term is empty, clear matches and status

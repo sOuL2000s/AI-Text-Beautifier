@@ -18,7 +18,6 @@
     <!-- KaTeX for Math Rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
     <style>
         /* --- Root Variables (Default Light Theme) --- */
@@ -949,51 +948,271 @@
         let isSyncing = false;
 
         // --- Initial Markdown Template ---
-        const WELCOME_TEMPLATE = `# Welcome to ZenWrite: Fully Customizable Markdown Studio
+        const WELCOME_TEMPLATE = `# ✨ Welcome to ZenWrite: Your Ultimate Markdown Studio ✨
 
-Start writing clean, structured documents instantly. Use the controls above to customize fonts, colors, and insert common markdown tags quickly.
+Dive into a world where writing meets elegance and power. ZenWrite offers a seamless, customizable environment for all your markdown needs.
 
-## ✨ Full Customization and Features
+---
 
-### 1. Theming, Fonts, and Colors
-Use the header controls to choose a preset theme, or override it instantly with custom colors and fonts.
+## 🚀 Key Features & Customization
 
-### 2. Precise Math Rendering (KaTeX)
-ZenWrite handles complex technical notation with ease, supporting both standard Markdown $$...$$ and LaTeX delimiters.
+### 1. **Dynamic Theming & Typography**
+Explore a range of beautiful themes and fine-tune your reading experience with a selection of professional fonts. Override presets with your own custom text and background colors for a truly personal touch.
 
-Display Math ($$...$$ or \\[...\\]):
+- **Themes:** Light, Dark, Cyberpunk, Luxury, Nord, Editorial, SaaS, Pastel, Brutalist, Midnight, Sepia, Forest, Coffee, Dracula, Monochrome, Tokyo.
+- **Fonts:** Inter, Lora, Fira Code, Syne, and many more!
+
+### 2. **Precise Math & LaTeX Rendering with KaTeX**
+Effortlessly integrate complex mathematical equations and scientific notation directly into your documents. ZenWrite supports both display and inline LaTeX syntax.
+
+**Display Math** ($$...$$ or \\[...\\]):
 $$
-\\mathbf{E} = \\frac{1}{4\\pi\\varepsilon_0} \\sum_{i=1}^n \\frac{q_i}{|\\mathbf{r}-\\mathbf{r}_i|^2} \\hat{\\mathbf{r}}_i
+\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi} \\quad \\text{(Gaussian Integral)}
 $$
 
-Inline Math ($\\$...$ or \\(...\\)): The equation \\(a^2 + b^2 = c^2\\) is rendered inline, alongside $E=mc^2$.
+**Inline Math** ($...$ or \\(...\\)): The famous \\($E=mc^2$\\) equation is a cornerstone of physics, and the Pythagorean theorem states that $a^2 + b^2 = c^2$.
 
-### 3. High Quality Export
-The **High Quality PDF (via Print)** option uses your browser's native print engine for perfect, scalable output.
+### 3. **Smart Markdown Controls & Shortcuts**
+Quickly format your text using intuitive controls or familiar keyboard shortcuts:
+- **Bold:** \`**Ctrl+B**\` or \`**text**\`
+- **Italic:** \`_Ctrl+I_\` or \`*text*\`
+- **Headers:** \`H1\` (add \`# \`), \`H2\` (add \`## \`), \`H3\` (add \`### \`), etc.
+- **Lists:** \`List\` (add \`- \`)
+- **Code:** \`Code\` (inline) or \`{}\` (block)
+- **Links:** \`Link\` (insert \`[text](url)\`)
 
-| Feature | Custom | Optimized |
-| :--- | :---: | :---: |
-| Fonts | ✅ | ✅ |
-| Colors | ✅ | ✅ |
-| Scroll Sync | ✅ | ✅ |
+### 4. **Advanced Code Highlighting**
+Showcase your code snippets with stunning syntax highlighting across various programming languages.
 
-### 4. Code Blocks
-We support full syntax highlighting for various languages:
+\`\`\`python
+def factorial(n):
+    """Calculate the factorial of a non-negative integer."""
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)
 
-\`\`\`javascript
-function calculate_score(team_data) {
-    // Action: Score calculated
-    logAction('Data analysis started.');
-    const total = team_data.reduce((sum, player) => sum + player.score, 0);
-    return total;
-}
+# Example usage
+num = 5
+print(f"The factorial of {num} is {factorial(num)}")
 \`\`\`
+
+\`\`\`html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello ZenWrite</title>
+</head>
+<body>
+    <h1>My Awesome Document</h1>
+    <p>This is a paragraph.</p>
+</body>
+</html>
+\`\`\`
+
+### 5. **Robust Find & Replace Functionality**
+Seamlessly navigate and modify your document with the built-in search tool.
+- **\`Ctrl+F\`** or **\`Ctrl+H\`** to open the panel.
+- **\`Enter\`** for next match, **\`Shift+Enter\`** for previous.
+- **\`Replace\`** and **\`Replace All\`** options.
+
+### 6. **Comprehensive Export Options**
+Publish your work in various formats to suit any need.
+- **High Quality PDF (via Print):** Perfect for professional documents.
+- **Markdown (.md):** For sharing raw source.
+- **HTML (.html):** Standalone web-ready content.
+- **Plain Text (.txt):** Simple, universal output.
+- **CSV (Table Extract):** Export structured data from tables.
+- **JSON, XML, YAML:** For programmatic data exchange.
+
+### 7. **Effortless Import & Reset**
+- **Import:** Load existing \`.md\` or \`.txt\` files directly into the editor.
+- **Reset App:** Clear all local storage and revert to default settings and content with a single click.
+
+---
+
+## 📚 Markdown Elements in Action
+
+### Blockquotes
+> "The only way to do great work is to love what you do."
+> - Steve Jobs
+
+### Lists
+**Unordered List:**
+*   Item One
+*   Item Two
+    *   Sub-item A
+    *   Sub-item B
+*   Item Three
+
+**Ordered List:**
+1.  First step
+2.  Second step
+    1.  Sub-step 1
+    2.  Sub-step 2
+3.  Third step
+
+**Task List:**
+- [x] Complete project proposal
+- [x] Implement core features
+- [ ] Write documentation
+- [ ] Deploy to production
+
+### Tables
+| Header 1 | Header 2 | Header 3 |
+| :------- | :------: | -------: |
+| Row 1 Col 1 | Center Align | Right Align |
+| Row 2 Col 1 | Center Align | Right Align |
+| Row 3 Col 1 | Center Align | Right Align |
+
+### Images (Placeholders)
+![Placeholder Image](https://via.placeholder.com/400x200?text=Your+Image+Here)
+
+---
+
+**Start crafting your next masterpiece now!** ZenWrite saves your work automatically to your browser's local storage.
 `;
 
         // --- Marked & KaTeX Configuration ---
 
+        // --- Marked.js KaTeX Extensions ---
+
+        // 1. Block Math Extension (for $$...$$ and \[...\])
+        const katexBlock = {
+            name: 'katexBlock',
+            level: 'block',
+            // `start` method helps Marked.js quickly find potential math blocks
+            start(src) {
+                const dollarIdx = src.indexOf('$$');
+                const latexIdx = src.indexOf('\\[', dollarIdx > -1 ? dollarIdx : 0); // Search after $$ if found
+                if (dollarIdx === -1 && latexIdx === -1) return;
+                if (dollarIdx === -1) return latexIdx;
+                if (latexIdx === -1) return dollarIdx;
+                return Math.min(dollarIdx, latexIdx);
+            },
+            tokenizer(src, tokens) {
+                const displayRule = /^\$\$((?:[^$]|\$(?!\$))+?)\$\$/; // Matches $$...$$
+                const latexDisplayRule = /^\\\[((?:[^\]]|\\](?!\\\[))+?)\\\]/; // Matches \[...\]
+
+                let match = displayRule.exec(src);
+                let isDisplayMode = true;
+
+                if (!match) { // If no $$...$$ match, try for \[...\]
+                    match = latexDisplayRule.exec(src);
+                    if (!match) return false; // Not a math block
+                }
+
+                // We found a match, create a token
+                return {
+                    type: 'katexBlock',
+                    raw: match[0], // Original raw markdown string including delimiters
+                    text: match[1].trim(), // Just the content inside the delimiters
+                    displayMode: isDisplayMode,
+                    _consumed: match[0].length // Tell Marked.js how many characters were consumed
+                };
+            },
+            renderer(token) {
+                // Ensure KaTeX is loaded before trying to render
+                if (typeof window.katex === 'undefined' || typeof window.katex.renderToString === 'undefined') {
+                    console.warn("KaTeX library not available for rendering math. Displaying raw markdown.");
+                    return `<pre>${token.raw}</pre>`; // Fallback to raw if KaTeX not loaded
+                }
+                try {
+                    // KaTeX expects single backslashes for commands. Markdown often uses double backslashes.
+                    // Replace `\\` with `\` to unescape.
+                    const unescapedText = token.text.replace(/\\\\/g, '\\');
+                    return window.katex.renderToString(unescapedText, {
+                        throwOnError: false, // Don't throw errors, just render what you can
+                        displayMode: token.displayMode // Use displayMode based on the matched delimiter type
+                    });
+                } catch (e) {
+                    console.error("KaTeX rendering error for block:", e);
+                    // Display error message and the raw (mangled) text for debugging
+                    return `<div style="color: red; padding: 5px; border: 1px solid red; background-color: #ffeeee;">
+                                <strong>KaTeX Error:</strong> ${e.message}<br>
+                                <pre>${token.raw}</pre>
+                            </div>`;
+                }
+            }
+        };
+
+        // 2. Inline Math Extension (for $...$ and \(...\))
+        const katexInline = {
+            name: 'katexInline',
+            level: 'inline',
+            // `start` method helps Marked.js quickly find potential inline math
+            start(src) {
+                const dollarIdx = src.indexOf('$');
+                const latexIdx = src.indexOf('\\(', dollarIdx > -1 ? dollarIdx : 0);
+                if (dollarIdx === -1 && latexIdx === -1) return;
+                if (dollarIdx === -1) return latexIdx;
+                if (latexIdx === -1) return dollarIdx;
+                return Math.min(dollarIdx, latexIdx);
+            },
+            tokenizer(src, tokens) {
+                // For inline $...$, ensure we don't accidentally match $$ display math
+                const inlineRule = /^\$((?:[^$\n\\]|\\.)+?)\$/; // Matches $...$ (non-greedy, allows escaped chars)
+                const latexInlineRule = /^\\\( ((?:[^\\]|\\.)+?)\\\)/; // Matches \(...\)
+
+                let match = inlineRule.exec(src);
+                if (match && !match[0].startsWith('$$') && match[1].trim().length > 0) { // Avoid $$ and empty matches
+                    return {
+                        type: 'katexInline',
+                        raw: match[0],
+                        text: match[1].trim(),
+                        displayMode: false,
+                        _consumed: match[0].length
+                    };
+                }
+
+                // If no $...$ match (or it was an invalid one), try for \(...\)
+                match = latexInlineRule.exec(src);
+                if (match) {
+                    return {
+                        type: 'katexInline',
+                        raw: match[0],
+                        text: match[1].trim(),
+                        displayMode: false,
+                        _consumed: match[0].length
+                    };
+                }
+
+                return false;
+            },
+            renderer(token) {
+                // Ensure KaTeX is loaded
+                if (typeof window.katex === 'undefined' || typeof window.katex.renderToString === 'undefined') {
+                    console.warn("KaTeX library not available for rendering math. Displaying raw markdown.");
+                    return `<code>${token.raw}</code>`; // Fallback to raw if KaTeX not loaded
+                }
+                try {
+                    // Unescape backslashes for KaTeX
+                    const unescapedText = token.text.replace(/\\\\/g, '\\');
+                    return window.katex.renderToString(unescapedText, {
+                        throwOnError: false,
+                        displayMode: token.displayMode
+                    });
+                } catch (e) {
+                    console.error("KaTeX rendering error for inline:", e);
+                    // Display error message and raw text
+                    return `<span style="color: red; padding: 2px; border: 1px solid red; background-color: #ffeeee;">
+                                <strong>KaTeX Error:</strong> ${e.message}<br>
+                                <code>${token.raw}</code>
+                            </span>`;
+                }
+            }
+        };
+
+        // --- Register Extensions ---
+        // This *must* come before `marked.setOptions`.
+        marked.use({ extensions: [katexBlock, katexInline] });
+
+        // --- Original Marked.js Options (keep highlight, gfm, breaks) ---
         marked.setOptions({
-            renderer: new marked.Renderer(),
+            // You no longer need to explicitly define a new `renderer` object here
+            // unless you want to override other specific markdown elements.
+            // The extensions' renderers will be automatically used for 'katexBlock' and 'katexInline' tokens.
             highlight: (code, lang) => {
                 const language = hljs.getLanguage(lang) ? lang : 'plaintext';
                 return hljs.highlight(code, { language }).value;
@@ -1111,24 +1330,9 @@ function calculate_score(team_data) {
                 const html = marked.parse(markdown);
                 preview.innerHTML = html;
 
-                // Render KaTeX
-                if (window.renderMathInElement) {
-                    renderMathInElement(preview, {
-                        delimiters: [
-                            // Display math: $$...$$
-                            { left: '$$', right: '$$', display: true },
-                            // Display math: \[...\] (LaTeX standard)
-                            { left: '\\[', right: '\\]', display: true },
-                            // Inline math: $...$
-                            { left: '$', right: '$', display: false },
-                            // Inline math: \(...\) (LaTeX standard)
-                            { left: '\\(', right: '\\)', display: false },
-                        ],
-                        // Crucial: Prevent KaTeX from trying to parse math inside code blocks
-                        ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
-                        throwOnError: false
-                    });
-                }
+                // KaTeX rendering is now handled directly by the marked.js extension.
+                // `marked.parse` will return HTML with KaTeX already rendered.
+                // No need for window.renderMathInElement here.
                 logAction('Document rendered.');
             } catch (e) {
                 preview.innerHTML = `<p style="color: red;">Markdown Rendering Error: ${e.message}</p>`;
@@ -1837,7 +2041,7 @@ markdown_content: |
             logAction('ZenWrite loaded successfully. Scroll sync is active.');
         }
 
-        initializeApp();
+        window.addEventListener('load', initializeApp);
     </script>
 </body>
 </html>

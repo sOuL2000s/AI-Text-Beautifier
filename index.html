@@ -589,70 +589,131 @@
             transition: opacity 0.3s;
         }
 
-        /* --- PRINT CSS (For High Quality PDF Export) --- */
+        /* --- PROFESSIONAL PDF & PRINT ENGINE --- */
+        :root {
+            /* PDF-Specific Customization Variables */
+            --pdf-margin: 20mm;
+            --pdf-font-size: 11pt;
+            --pdf-line-height: 1.6;
+        }
+
         @page {
             size: A4;
-            margin: 0; /* Remove browser default margin (handles headers/footers) */
+            margin: var(--pdf-margin);
+            /* Reset counter for page numbers if needed in future */
         }
 
         @media print {
-            /* Force background colors and colors */
+            /* 1. Base Typography & Engine Settings */
             html, body {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 background-color: var(--bg-color) !important;
                 color: var(--text-color) !important;
-                margin: 0 !important;
-                padding: 0 !important;
                 height: auto !important;
+                min-height: 100%;
+                font-size: var(--pdf-font-size);
+                line-height: var(--pdf-line-height);
+                image-rendering: -webkit-optimize-contrast; /* Best image quality in PDF */
+                font-variant-ligatures: common-ligatures;
+                hyphens: auto;
+                padding: 0 !important;
+                margin: 0 !important;
             }
 
-            /* Hide everything except the preview */
-            header, #editor-container, #status-bar, footer {
+            /* 2. Hide UI Chrome */
+            header, #editor-container, #status-bar, footer, .control-group, 
+            #toggle-find-replace-button, .find-replace-group, #pdf-settings-group {
                 display: none !important;
             }
 
             main {
                 display: block !important;
+                overflow: visible !important;
+                position: static !important;
                 height: auto !important;
             }
 
-            .panel {
-                display: none !important; /* Hide panels by default */
-            }
-
+            /* 3. Document Structure */
+            .panel { display: none !important; }
             #preview {
-                display: block !important; /* Show only preview */
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                padding: 40px !important; /* Managed by CSS instead of browser */
-                background-color: var(--preview-bg) !important;
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background-color: transparent !important;
                 color: var(--text-color) !important;
-                min-height: 100vh;
-                box-sizing: border-box;
                 overflow: visible !important;
+                position: static !important;
             }
 
-            /* Elements styling preservation */
+            /* 4. Smart Page Breaks & Spacing */
+            #preview h1, #preview h2, #preview h3, #preview h4 {
+                color: var(--link-color) !important;
+                page-break-after: avoid;
+                break-after: avoid;
+                margin-top: 1.5em;
+                margin-bottom: 0.5em;
+            }
+
+            #preview p, #preview li {
+                orphans: 3;
+                widows: 3;
+                margin-bottom: 1em;
+            }
+
+            /* Force certain elements to stay together */
+            #preview pre, #preview blockquote, #preview table, #preview img, .katex-display {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin-bottom: 1.5em;
+            }
+
+            /* 5. Theme Adaptive Styling (Preserves exact theme looks) */
             #preview pre {
                 background-color: var(--code-bg) !important;
-                overflow-x: visible !important; /* Still useful to explicitly prevent scroll */
-                white-space: pre-wrap !important; /* Crucial for wrapping */
-                word-wrap: break-word !important; /* Handle super long words */
-                font-size: 0.8em !important; /* Optionally, slightly smaller font for dense code */
-                line-height: 1.4 !important;
+                color: var(--text-color) !important;
+                border: 1px solid var(--panel-border) !important;
+                padding: 1.2em !important;
+                font-size: 0.9em;
+                border-radius: 6px;
+                white-space: pre-wrap !important;
+                word-wrap: break-word;
             }
-            #preview code { background-color: var(--code-bg) !important; }
-            #preview blockquote { background-color: var(--blockquote-bg) !important; border-left-color: var(--link-color) !important; }
-            #preview h1, #preview h2, #preview h3 { border-bottom-color: var(--panel-border) !important; color: var(--link-color) !important; }
-            #preview a { color: var(--link-color) !important; }
-            .katex { color: inherit !important; }
 
+            #preview blockquote {
+                background-color: var(--blockquote-bg) !important;
+                border-left: 4pt solid var(--link-color) !important;
+                padding: 1em 1.5em !important;
+                font-style: italic;
+                border-radius: 0 4px 4px 0;
+            }
+
+            #preview a {
+                color: var(--link-color) !important;
+                text-decoration: none;
+                border-bottom: 0.5pt solid var(--link-color);
+            }
+
+            /* 6. High-Fidelity Rendering for Math/Code */
+            .katex { 
+                font-size: 1.1em; /* Slightly larger in print for clarity */
+            }
+            .katex-display { 
+                padding: 1em 0;
+            }
+            
+            /* Syntax highlighting adjustments for print */
+            .hljs { 
+                background: transparent !important; 
+                padding: 0 !important;
+            }
+
+            /* Remove shadows for clean PDF output */
             * {
                 box-shadow: none !important;
                 text-shadow: none !important;
+                transition: none !important;
             }
         }
 
@@ -860,8 +921,44 @@
 
             <input type="file" id="file-upload" style="display: none;" onchange="handleImport(event)">
             <button onclick="document.getElementById('file-upload').click()" title="Load file into editor">Import</button>
+            <button id="toggle-pdf-settings-button" title="Customize PDF Layout">PDF Settings</button>
             <button onclick="resetApplication()" title="Clear saved content, themes, and settings.">Reset App</button>
             <button id="toggle-find-replace-button" title="Find and Replace (Ctrl+F)">Search</button>
+        </div>
+
+        <!-- PDF CUSTOMIZATION CONTROLS -->
+        <div id="pdf-settings-group" class="control-group hidden">
+            <label class="color-picker-label">PDF Theme
+                <select id="pdf-theme-select" onchange="updatePDFSettings()" title="Restricted to print-optimized themes">
+                    <option value="default">Default Light</option>
+                    <option value="editorial">Editorial Journal</option>
+                    <option value="saas">Modern SaaS</option>
+                    <option value="pastel">Playful Pastel</option>
+                    <option value="brutalist">Brutalist</option>
+                    <option value="monochrome">Pure Monochrome</option>
+                </select>
+            </label>
+            <label class="color-picker-label">Margin
+                <select id="pdf-margin-select" onchange="updatePDFSettings()">
+                    <option value="10mm">Narrow</option>
+                    <option value="20mm" selected>Normal</option>
+                    <option value="30mm">Wide</option>
+                </select>
+            </label>
+            <label class="color-picker-label">Font Size
+                <select id="pdf-size-select" onchange="updatePDFSettings()">
+                    <option value="9pt">Small</option>
+                    <option value="11pt" selected>Medium</option>
+                    <option value="13pt">Large</option>
+                </select>
+            </label>
+            <label class="color-picker-label">Page Break
+                <select id="pdf-break-select" onchange="updatePDFSettings()">
+                    <option value="auto" selected>Auto</option>
+                    <option value="avoid">Avoid Tables</option>
+                </select>
+            </label>
+            <button id="close-pdf-settings" title="Close Settings">✕</button>
         </div>
 
         <!-- FIND & REPLACE CONTROLS - Initially hidden -->
@@ -940,6 +1037,7 @@
         const STORAGE_KEY = 'zenwrite_content';
         const FILENAME_KEY = 'zenwrite_filename';
         const THEME_KEY = 'zenwrite_theme';
+        const PDF_THEME_KEY = 'zenwrite_pdf_theme';
         const FONT_KEY = 'zenwrite_font';
         const COLOR_TEXT_KEY = 'zenwrite_color_text';
         const COLOR_BG_KEY = 'zenwrite_color_bg';
@@ -1869,25 +1967,45 @@ Publish your work in various formats to suit any need.
 
             switch (format) {
                 case 'pdf':
-                    const originalTitle = document.title;
-                    document.title = sanitizedName;
-                    logAction(`Preparing High Quality PDF...`);
+                    // Force check for PDF settings
+                    const pdfSettingsGroup = document.getElementById('pdf-settings-group');
+                    if (pdfSettingsGroup.classList.contains('hidden')) {
+                        pdfSettingsGroup.classList.remove('hidden');
+                        logAction("Please verify PDF Print Theme and settings before exporting.");
+                        return; // Halt export to let user see settings
+                    }
 
-                    // Ensure fonts are loaded before printing
+                    const originalTitle = document.title;
+                    const currentUITheme = document.getElementById('theme-select').value;
+                    const targetPDFTheme = document.getElementById('pdf-theme-select').value;
+                    
+                    // Sanitize filename for the browser's save dialog
+                    document.title = sanitizedName;
+                    logAction(`Applying PDF Theme: ${targetPDFTheme}...`);
+
+                    // Temporarily switch to PDF-specific theme
+                    applyTheme(targetPDFTheme);
+
+                    // Ensure the UI is clean and fonts are ready
                     if (document.fonts) {
                         try {
                             await document.fonts.ready;
                         } catch (e) {
-                            console.warn("Font loading timed out or failed, proceeding with print.");
+                            console.warn("Font loading timeout - proceeding with standard fonts.");
                         }
                     }
 
-                    window.print();
-
+                    // Small delay to allow layout recalculation for print media
                     setTimeout(() => {
-                        document.title = originalTitle;
-                        logAction(`PDF export triggered for ${sanitizedName}.pdf`);
-                    }, 500);
+                        window.print();
+                        
+                        // Restore title and original UI theme
+                        setTimeout(() => {
+                            document.title = originalTitle;
+                            applyTheme(currentUITheme);
+                            logAction(`PDF generated: ${sanitizedName}.pdf`);
+                        }, 1000);
+                    }, 400);
                     break;
                 case 'md':
                 case 'txt':
@@ -1960,6 +2078,37 @@ markdown_content: |
         }
 
 
+        function updatePDFSettings() {
+            const pdfTheme = document.getElementById('pdf-theme-select').value;
+            const margin = document.getElementById('pdf-margin-select').value;
+            const fontSize = document.getElementById('pdf-size-select').value;
+            const breakPolicy = document.getElementById('pdf-break-select').value;
+
+            localStorage.setItem(PDF_THEME_KEY, pdfTheme);
+            document.documentElement.style.setProperty('--pdf-margin', margin);
+            document.documentElement.style.setProperty('--pdf-font-size', fontSize);
+            
+            // Show preview of the PDF theme immediately
+            applyTheme(pdfTheme);
+            // Sync the main theme dropdown to reflect the previewed theme
+            document.getElementById('theme-select').value = pdfTheme;
+
+            // Apply specific table break rule
+            const style = document.createElement('style');
+            style.id = 'pdf-dynamic-rules';
+            const existing = document.getElementById('pdf-dynamic-rules');
+            if (existing) existing.remove();
+            
+            if (breakPolicy === 'avoid') {
+                style.innerHTML = `@media print { #preview table, #preview pre { page-break-inside: avoid !important; } }`;
+            } else {
+                style.innerHTML = `@media print { #preview table, #preview pre { page-break-inside: auto !important; } }`;
+            }
+            document.head.appendChild(style);
+            
+            logAction(`PDF Preview: ${pdfTheme} theme, ${margin} margin.`);
+        }
+
         function downloadFile(filename, data, mimeType) {
             const blob = new Blob([data], { type: mimeType });
             const url = URL.createObjectURL(blob);
@@ -1994,7 +2143,14 @@ markdown_content: |
             }
             applyTheme(themeSelect.value);
 
-            // 4. Load font
+            // 4. Load PDF specific theme
+            const savedPdfTheme = localStorage.getItem(PDF_THEME_KEY) || 'default';
+            const pdfThemeSelect = document.getElementById('pdf-theme-select');
+            if (pdfThemeSelect.querySelector(`option[value="${savedPdfTheme}"]`)) {
+                pdfThemeSelect.value = savedPdfTheme;
+            }
+
+            // 5. Load font
             const savedFont = localStorage.getItem(FONT_KEY) || 'Inter'; // Default to Inter
             const fontSelect = document.getElementById('font-select');
             if (fontSelect.querySelector(`option[value="${savedFont}"]`)) {
@@ -2012,6 +2168,20 @@ markdown_content: |
             // 7. Setup Find & Replace listeners
             toggleFindReplaceButton.addEventListener('click', () => toggleFindReplacePanel('find'));
             closeFindReplaceButton.addEventListener('click', () => toggleFindReplacePanel());
+
+            // 8. Setup PDF Settings listeners
+            const pdfSettingsBtn = document.getElementById('toggle-pdf-settings-button');
+            const pdfSettingsGroup = document.getElementById('pdf-settings-group');
+            const closePdfBtn = document.getElementById('close-pdf-settings');
+
+            pdfSettingsBtn.addEventListener('click', () => {
+                pdfSettingsGroup.classList.toggle('hidden');
+                logAction(pdfSettingsGroup.classList.contains('hidden') ? 'PDF Settings closed.' : 'PDF Settings opened.');
+            });
+
+            closePdfBtn.addEventListener('click', () => {
+                pdfSettingsGroup.classList.add('hidden');
+            });
             findPrevButton.addEventListener('click', findPrevious);
             findNextButton.addEventListener('click', findNext);
             replaceButton.addEventListener('click', replaceCurrent);

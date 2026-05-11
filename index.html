@@ -439,6 +439,38 @@
             white-space: nowrap;
         }
 
+        /* --- Scrollbar Customization (WebKit Browsers) --- */
+
+        /* Overall scrollbar width/height */
+        ::-webkit-scrollbar {
+            width: 10px; /* For vertical scrollbars */
+            height: 10px; /* For horizontal scrollbars */
+            background-color: transparent;
+        }
+
+        /* Track (the background of the scrollbar) */
+        ::-webkit-scrollbar-track {
+            background-color: var(--control-bg);
+            border-radius: 5px;
+        }
+
+        /* Thumb (the draggable part) */
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--accent-color);
+            border-radius: 5px;
+            border: 2px solid var(--control-bg);
+        }
+
+        /* Thumb on hover */
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: color-mix(in srgb, var(--accent-color) 80%, black);
+        }
+
+        /* Corner (where vertical and horizontal scrollbars meet) */
+        ::-webkit-scrollbar-corner {
+            background-color: var(--control-bg);
+        }
+
         /* --- FIX: Switch to Dual Scrollbar Layout --- */
         main {
             display: flex;
@@ -457,6 +489,10 @@
             overflow-y: auto; /* Panels are independently scrollable */
             position: relative;
             transition: background-color var(--transition-speed);
+
+            /* --- Scrollbar Customization (Firefox) --- */
+            scrollbar-width: thin; 
+            scrollbar-color: var(--accent-color) var(--control-bg);
         }
 
         /* 3. Editor/Preview Styles (Using V-Code inspired large padding area) */
@@ -599,7 +635,7 @@
 
         @page {
             size: A4;
-            margin: var(--pdf-margin);
+            margin: 0;
             /* Reset counter for page numbers if needed in future */
         }
 
@@ -612,6 +648,7 @@
                 color: var(--text-color) !important;
                 height: auto !important;
                 min-height: 100%;
+                overflow: visible !important;
                 font-size: var(--pdf-font-size);
                 line-height: var(--pdf-line-height);
                 image-rendering: -webkit-optimize-contrast; /* Best image quality in PDF */
@@ -640,8 +677,8 @@
                 display: block !important;
                 width: 100% !important;
                 margin: 0 !important;
-                padding: 0 !important;
-                background-color: transparent !important;
+                padding: var(--pdf-margin) !important;
+                background-color: var(--bg-color) !important;
                 color: var(--text-color) !important;
                 overflow: visible !important;
                 position: static !important;
@@ -929,13 +966,23 @@
         <!-- PDF CUSTOMIZATION CONTROLS -->
         <div id="pdf-settings-group" class="control-group hidden">
             <label class="color-picker-label">PDF Theme
-                <select id="pdf-theme-select" onchange="updatePDFSettings()" title="Restricted to print-optimized themes">
+                <select id="pdf-theme-select" onchange="updatePDFSettings()" title="All themes enabled for testing">
                     <option value="default">Default Light</option>
+                    <option value="dark">Pro Dark</option>
+                    <option value="cyberpunk">Neon Cyberpunk</option>
+                    <option value="luxury">Luxury Serif</option>
+                    <option value="nord">Nord Arctic</option>
                     <option value="editorial">Editorial Journal</option>
                     <option value="saas">Modern SaaS</option>
                     <option value="pastel">Playful Pastel</option>
                     <option value="brutalist">Brutalist</option>
+                    <option value="midnight">Deep Midnight</option>
+                    <option value="sepia">Warm Sepia</option>
+                    <option value="forest">Natural Forest</option>
+                    <option value="coffee">Coffee Shop</option>
+                    <option value="dracula">Dracula Dark</option>
                     <option value="monochrome">Pure Monochrome</option>
+                    <option value="tokyo">Tokyo Night</option>
                 </select>
             </label>
             <label class="color-picker-label">Margin
@@ -1010,6 +1057,9 @@
         const preview = document.getElementById('preview');
         const fileNameInput = document.getElementById('file-name-input');
         const actionLog = document.getElementById('action-log');
+
+        // --- NEW: Global flag to track if PDF settings were explicitly opened ---
+        let pdfSettingsExplicitlyOpened = false;
 
         // Find & Replace elements
         const toggleFindReplaceButton = document.getElementById('toggle-find-replace-button');
@@ -1960,6 +2010,39 @@ Publish your work in various formats to suit any need.
             reader.readAsText(file);
         }
 
+        // NEW HELPER FUNCTION: Encapsulates the actual PDF printing logic
+        async function performPdfPrint(sanitizedName, targetPDFTheme, originalUITheme) {
+            const originalTitle = document.title;
+            document.title = sanitizedName;
+
+            // Apply the target PDF theme for printing.
+            applyTheme(targetPDFTheme);
+
+            // Ensure fonts are ready before printing to prevent FOUC (Flash Of Unstyled Content)
+            if (document.fonts) {
+                try {
+                    await document.fonts.ready;
+                } catch (e) {
+                    console.warn("Font loading timeout - proceeding with standard fonts.");
+                }
+            }
+
+            // Small delay to allow layout recalculation for print media styles
+            setTimeout(() => {
+                window.print();
+
+                // Restore title and original UI theme after printing dialog closes.
+                setTimeout(() => {
+                    document.title = originalTitle;
+                    // Only restore if the PDF theme was different from the original UI theme.
+                    if (originalUITheme !== targetPDFTheme) {
+                        applyTheme(originalUITheme);
+                    }
+                    logAction(`PDF generated: ${sanitizedName}.pdf`);
+                }, 1000);
+            }, 400);
+        }
+
         async function handleExport(format) {
             const sanitizedName = generateFileName();
 
@@ -1967,45 +2050,38 @@ Publish your work in various formats to suit any need.
 
             switch (format) {
                 case 'pdf':
-                    // Force check for PDF settings
                     const pdfSettingsGroup = document.getElementById('pdf-settings-group');
-                    if (pdfSettingsGroup.classList.contains('hidden')) {
-                        pdfSettingsGroup.classList.remove('hidden');
-                        logAction("Please verify PDF Print Theme and settings before exporting.");
-                        return; // Halt export to let user see settings
-                    }
-
-                    const originalTitle = document.title;
                     const currentUITheme = document.getElementById('theme-select').value;
-                    const targetPDFTheme = document.getElementById('pdf-theme-select').value;
+                    const pdfThemeSelect = document.getElementById('pdf-theme-select');
                     
-                    // Sanitize filename for the browser's save dialog
-                    document.title = sanitizedName;
-                    logAction(`Applying PDF Theme: ${targetPDFTheme}...`);
+                    // Get all themes that are explicitly listed as PDF-supported
+                    const pdfSupportedThemes = Array.from(pdfThemeSelect.options).map(option => option.value);
 
-                    // Temporarily switch to PDF-specific theme
-                    applyTheme(targetPDFTheme);
+                    // Check if the current UI theme is among the PDF-supported themes
+                    const isCurrentThemePdfSupported = pdfSupportedThemes.includes(currentUITheme);
 
-                    // Ensure the UI is clean and fonts are ready
-                    if (document.fonts) {
-                        try {
-                            await document.fonts.ready;
-                        } catch (e) {
-                            console.warn("Font loading timeout - proceeding with standard fonts.");
+                    // Condition for a direct print:
+                    const shouldDirectPrint = isCurrentThemePdfSupported && !pdfSettingsExplicitlyOpened && pdfSettingsGroup.classList.contains('hidden');
+
+                    if (shouldDirectPrint) {
+                        pdfThemeSelect.value = currentUITheme;
+                        updatePDFSettings(); 
+                        logAction(`Current theme "${currentUITheme}" is PDF-ready. Printing directly.`);
+                        await performPdfPrint(sanitizedName, currentUITheme, currentUITheme);
+                    } else {
+                        if (pdfSettingsGroup.classList.contains('hidden')) {
+                            pdfSettingsGroup.classList.remove('hidden');
+                            logAction("Please verify PDF Print Theme and settings before exporting.");
+                            if (isCurrentThemePdfSupported) {
+                                pdfThemeSelect.value = currentUITheme;
+                            }
+                            return;
                         }
-                    }
 
-                    // Small delay to allow layout recalculation for print media
-                    setTimeout(() => {
-                        window.print();
-                        
-                        // Restore title and original UI theme
-                        setTimeout(() => {
-                            document.title = originalTitle;
-                            applyTheme(currentUITheme);
-                            logAction(`PDF generated: ${sanitizedName}.pdf`);
-                        }, 1000);
-                    }, 400);
+                        const targetPDFTheme = pdfThemeSelect.value;
+                        logAction(`Applying PDF Theme: ${targetPDFTheme}...`);
+                        await performPdfPrint(sanitizedName, targetPDFTheme, currentUITheme);
+                    }
                     break;
                 case 'md':
                 case 'txt':
@@ -2088,9 +2164,9 @@ markdown_content: |
             document.documentElement.style.setProperty('--pdf-margin', margin);
             document.documentElement.style.setProperty('--pdf-font-size', fontSize);
             
-            // Show preview of the PDF theme immediately
+            // Show preview of the PDF theme immediately by applying it to the main UI
             applyTheme(pdfTheme);
-            // Sync the main theme dropdown to reflect the previewed theme
+            // Sync the main theme dropdown to reflect the previewed theme.
             document.getElementById('theme-select').value = pdfTheme;
 
             // Apply specific table break rule
@@ -2176,6 +2252,8 @@ markdown_content: |
 
             pdfSettingsBtn.addEventListener('click', () => {
                 pdfSettingsGroup.classList.toggle('hidden');
+                // NEW: Set the flag when the user explicitly clicks the PDF settings button
+                pdfSettingsExplicitlyOpened = true;
                 logAction(pdfSettingsGroup.classList.contains('hidden') ? 'PDF Settings closed.' : 'PDF Settings opened.');
             });
 

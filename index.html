@@ -1681,7 +1681,9 @@ Publish your work in various formats to suit any need.
                     replaceInput.focus();
                     replaceInput.select();
                 }
-                findText(false); // Perform initial find without selecting, just to get match count
+                // IMPORTANT: Call findText with true to immediately highlight the first match.
+                // When opening the panel, we want the editor focused on the match.
+                findText(true, true); 
                 logAction('Find/Replace panel opened.');
             } else {
                 // Panel is hidden
@@ -1698,7 +1700,7 @@ Publish your work in various formats to suit any need.
             findStatus.textContent = '';
         }
 
-        function findText(selectMatch = true) {
+        function findText(selectMatch = true, shouldFocusEditor = true) {
             const searchTerm = findInput.value;
             const content = editor.value;
 
@@ -1728,7 +1730,7 @@ Publish your work in various formats to suit any need.
             logAction(`${matches.length} occurrences of "${searchTerm}" found.`);
 
             if (selectMatch) {
-                highlightMatch(currentMatchIndex);
+                highlightMatch(currentMatchIndex, shouldFocusEditor);
                 findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
             } else {
                 findStatus.textContent = `${matches.length} matches`;
@@ -1738,13 +1740,13 @@ Publish your work in various formats to suit any need.
         function findNext() {
             // Ensure matches are up-to-date for the current search term
             if (findInput.value !== lastSearchTerm || matches.length === 0) {
-                findText(false); // Re-run find if necessary, but don't auto-select
+                findText(false, true); // Re-run find if necessary, but don't auto-select
                 if (matches.length === 0) return;
             }
             if (matches.length === 0) return;
 
             currentMatchIndex = (currentMatchIndex + 1) % matches.length;
-            highlightMatch(currentMatchIndex);
+            highlightMatch(currentMatchIndex, true);
             findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
             logAction(`Moved to next match.`);
         }
@@ -1752,26 +1754,28 @@ Publish your work in various formats to suit any need.
         function findPrevious() {
             // Ensure matches are up-to-date for the current search term
             if (findInput.value !== lastSearchTerm || matches.length === 0) {
-                findText(false); // Re-run find if necessary, but don't auto-select
+                findText(false, true); // Re-run find if necessary, but don't auto-select
                 if (matches.length === 0) return;
             }
             if (matches.length === 0) return;
 
             currentMatchIndex = (currentMatchIndex - 1 + matches.length) % matches.length;
-            highlightMatch(currentMatchIndex);
+            highlightMatch(currentMatchIndex, true);
             findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
             logAction(`Moved to previous match.`);
         }
 
 
-        function highlightMatch(index) {
+        function highlightMatch(index, shouldFocusEditor = true) {
             if (matches.length === 0 || index < 0 || index >= matches.length) return;
 
             const match = matches[index];
             const matchStart = match.index;
             const matchEnd = match.index + match[0].length;
 
-            editor.focus();
+            if (shouldFocusEditor) {
+                editor.focus();
+            }
             editor.setSelectionRange(matchStart, matchEnd); // Select the matched text
 
             // Calculate line number of the match start for scrolling
@@ -1843,12 +1847,12 @@ Publish your work in various formats to suit any need.
 
             // Re-find to update match positions and highlighting after replacement
             // This is crucial because string length might change, invalidating old match indices
-            findText(false); // Don't auto-select first match after replace, just update internal matches array
+            findText(false, true); // Don't auto-select first match after replace, just update internal matches array
 
             // After replacement, move to the next match (or the first if it was the last)
             if (matches.length > 0) {
                 currentMatchIndex = currentMatchIndex % matches.length; // Adjust if current index is now out of bounds
-                highlightMatch(currentMatchIndex);
+                highlightMatch(currentMatchIndex, true);
                 findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
             } else {
                 clearFindHighlighting();
@@ -2267,17 +2271,17 @@ markdown_content: |
             swapFindReplaceButton.addEventListener('click', swapFindReplace);
             clearFindReplaceButton.addEventListener('click', clearFindAndReplaceFields); // Added listener for clear button
 
-            findInput.addEventListener('input', () => { // When user types in find box, re-evaluate matches
+            findInput.addEventListener('input', () => {
                 // If the search term is empty, clear matches and status
                 if (!findInput.value) {
                     clearFindHighlighting();
+                    findStatus.textContent = ''; // Also clear status text
                     return;
                 }
-                // Re-run findText if the content of the input actually changed from the last search
-                // Or if there were no matches and now there might be (e.g., deleted and re-typed)
-                if (findInput.value !== lastSearchTerm || matches.length === 0) {
-                    findText(false); // Don't auto-select on every input, just show count
-                }
+
+                // When user types, always re-run findText with selection to update highlights in real-time.
+                // We pass false to shouldFocusEditor so focus stays in the find input field.
+                findText(true, false);
             });
 
             // These keydown listeners are now handled by the global document keydown listener

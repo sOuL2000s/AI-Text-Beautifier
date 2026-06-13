@@ -480,6 +480,43 @@
             height: 100%;
         }
 
+        /* Dropdown Menu Styles */
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--header-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            min-width: 140px;
+            margin-top: 5px;
+        }
+
+        .dropdown-menu button {
+            background: none;
+            border: none;
+            border-radius: 0;
+            padding: 10px 15px;
+            text-align: left;
+            width: 100%;
+            color: var(--header-control-text, var(--text-color));
+        }
+
+        .dropdown-menu button:hover {
+            background-color: var(--control-hover-bg);
+            transform: none;
+        }
+
+        /* Panel */
         .panel {
             flex: 1;
             padding: 0;
@@ -875,14 +912,29 @@
         </div>
 
         <!-- MARKDOWN EDITOR CONTROLS -->
-        <div class="control-group">
+        <div class="control-group" id="main-toolbar">
             <button class="markdown-control" onclick="insertMarkdownTag('**','**', 'bold text')" title="Bold (Ctrl+B)">B</button>
             <button class="markdown-control" onclick="insertMarkdownTag('*','*', 'italic text')" title="Italic (Ctrl+I)">_I_</button>
             <button class="markdown-control" onclick="insertMarkdownTag('# ', '')" title="Header 1">H1</button>
-            <button class="markdown-control" onclick="insertMarkdownTag('- ', '\n')" title="Bullet List">List</button>
+            <button class="markdown-control" onclick="insertMarkdownTag('- ', '')" title="Bullet List">List</button>
+            <button class="markdown-control" onclick="insertMarkdownTag('1. ', '')" title="Numbered List">1.</button>
             <button class="markdown-control" onclick="insertMarkdownTag('`','`', 'code')" title="Inline Code">Code</button>
-            <button class="markdown-control" onclick="insertMarkdownTag('```javascript\n', '\n```', 'console.log(\'Block\')')" title="Code Block">{}</button>
-            <button class="markdown-control" onclick="insertMarkdownTag('[','(http://link.com)', 'Link Text')" title="Insert Link">Link</button>
+            
+            <div class="dropdown-container">
+                <button class="markdown-control" id="more-tools-trigger" title="More Formatting Options">More ▾</button>
+                <div class="dropdown-menu hidden" id="more-tools-menu">
+                    <button onclick="insertMarkdownTag('## ', '')">Header 2</button>
+                    <button onclick="insertMarkdownTag('### ', '')">Header 3</button>
+                    <button onclick="insertMarkdownTag('> ', '')">Quote</button>
+                    <button onclick="insertMarkdownTag('---', '')">Separator</button>
+                    <button onclick="insertMarkdownTag('| Col 1 | Col 2 |\n| --- | --- |\n| Cell 1 | Cell 2 |', '')">Table</button>
+                    <button onclick="insertMarkdownTag('- [ ] ', '')">Task List</button>
+                    <button onclick="insertMarkdownTag('![Alt Text]', '(https://url.com)')">Image</button>
+                    <button onclick="insertMarkdownTag('$$ \n', '\n $$', 'E=mc^2')">Math Block</button>
+                    <button onclick="insertMarkdownTag('```javascript\n', '\n```', 'console.log(\'Hello\')')">Code Block</button>
+                    <button onclick="insertMarkdownTag('[','](http://link.com)', 'Link Text')">Link</button>
+                </div>
+            </div>
         </div>
 
         <!-- THEME & FONT CUSTOMIZATION -->
@@ -2237,6 +2289,63 @@ markdown_content: |
                 fontSelect.value = savedFont;
             }
             applyFont(savedFont);
+
+            // Dropdown Logic
+            const moreToolsTrigger = document.getElementById('more-tools-trigger');
+            const moreToolsMenu = document.getElementById('more-tools-menu');
+
+            moreToolsTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                moreToolsMenu.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', () => {
+                moreToolsMenu.classList.add('hidden');
+            });
+
+            // Auto-list Continuation Logic
+            editor.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const start = editor.selectionStart;
+                    const textBefore = editor.value.substring(0, start);
+                    const lines = textBefore.split('\n');
+                    const lastLine = lines[lines.length - 1];
+
+                    // Matches "- ", "* ", "+ ", or "1. ", "2. ", etc.
+                    const unorderedMatch = lastLine.match(/^(\s*)([-*+])\s(.*)/);
+                    const orderedMatch = lastLine.match(/^(\s*)(\d+)\.\s(.*)/);
+                    const emptyListMatch = lastLine.match(/^(\s*)([-*+]|\d+\.)\s*$/);
+
+                    if (emptyListMatch) {
+                        // User pressed enter on an empty list item: clear the line (end list)
+                        e.preventDefault();
+                        const lineStart = start - lastLine.length;
+                        editor.value = editor.value.substring(0, lineStart) + "\n" + editor.value.substring(start);
+                        editor.selectionStart = editor.selectionEnd = lineStart + 1;
+                        updatePreview();
+                    } else if (unorderedMatch) {
+                        e.preventDefault();
+                        const indent = unorderedMatch[1];
+                        const bullet = unorderedMatch[2];
+                        const newline = `\n${indent}${bullet} `;
+                        insertAtCursor(newline);
+                    } else if (orderedMatch) {
+                        e.preventDefault();
+                        const indent = orderedMatch[1];
+                        const num = parseInt(orderedMatch[2]);
+                        const newline = `\n${indent}${num + 1}. `;
+                        insertAtCursor(newline);
+                    }
+                }
+            });
+
+            function insertAtCursor(text) {
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
+                editor.selectionStart = editor.selectionEnd = start + text.length;
+                updatePreview();
+            }
 
             // 5. Setup Real-time input listener
             editor.addEventListener('input', updatePreview);

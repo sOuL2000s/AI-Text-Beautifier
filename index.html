@@ -1130,13 +1130,22 @@
         const swapFindReplaceButton = document.getElementById('swap-find-replace-button');
         const clearFindReplaceButton = document.getElementById('clear-find-replace-button'); // Added
 
+        // Undo/Redo Management
         let undoStack = [];
         let redoStack = [];
-        // `lastCommittedState` tracks the content of the editor as of the last time
-        // a state was added to the undoStack or an undo/redo operation occurred.
-        // It's used to prevent pushing identical states for user input.
+        // `lastCommittedState` tracks the content of the editor as it was *just before* the current
+        // editor.value, if a change occurred. This is the state that would be pushed to undoStack.
         let lastCommittedState = '';
         const MAX_UNDO_STACK_SIZE = 100; // Limit undo history to prevent memory issues
+
+        // Debounce timeouts
+        let editorInputDebounceTimeout;
+        const AUTO_SAVE_DELAY = 1000; // milliseconds for debounced update/save
+
+        // Find & Replace state
+        let currentMatchIndex = -1; // -1 indicates no match selected
+        let lastSearchTerm = '';
+        let matches = []; // Stores { index: number, length: number, value: string }
 
         // Storage Keys
         const STORAGE_KEY = 'zenwrite_content';
@@ -1431,12 +1440,10 @@ Publish your work in various formats to suit any need.
             actionLog.textContent = message;
             actionLog.style.opacity = 1;
 
-            // Clear the status message after 2.5 seconds
             clearTimeout(window.logTimeout);
             window.logTimeout = setTimeout(() => {
                 actionLog.style.opacity = 0;
-                // Optionally clear find-status too if it's related to the action
-                if (!findInput.value && !replaceInput.value) {
+                if (!findInput.value && !replaceInput.value) { // Clear find status only if search is inactive
                     findStatus.textContent = '';
                 }
             }, 2500);
@@ -1451,34 +1458,30 @@ Publish your work in various formats to suit any need.
             if (isSyncing) return;
             isSyncing = true;
 
-            // Calculate proportional scroll position
             const maxSourceScroll = source.scrollHeight - source.clientHeight;
             if (maxSourceScroll > 0) {
                 const scrollRatio = source.scrollTop / maxSourceScroll;
-
-                // Apply the same ratio to the target panel
                 const maxTargetScroll = target.scrollHeight - target.clientHeight;
                 target.scrollTop = scrollRatio * maxTargetScroll;
             }
 
-            // Debounce the flag
             requestAnimationFrame(() => {
                 isSyncing = false;
             });
         }
 
-        let editorContentLength = 0;
+        let editorContentLength = 0; // Still useful for general stats
 
         /**
-         * Commits the current editor state to the undo stack if it's different from the last committed state.
-         * This function is primarily used for handling user input via the 'input' event.
-         * It pushes the *previous* `lastCommittedState` to the stack and updates `lastCommittedState` to the current `editor.value`.
+         * Pushes the current `lastCommittedState` to the undo stack if `editor.value` has changed.
+         * Updates `lastCommittedState` to the current `editor.value`. Clears redo stack.
+         * This is primarily called from the debounced editor `input` event or explicitly for programmatic changes.
          */
-        function commitEditorStateForUndo() {
+        function pushToUndoStack() {
             if (editor.value !== lastCommittedState) {
-                undoStack.push(lastCommittedState); // Push the previous committed state
+                undoStack.push(lastCommittedState);
                 if (undoStack.length > MAX_UNDO_STACK_SIZE) {
-                    undoStack.shift(); // Remove the oldest state
+                    undoStack.shift();
                 }
                 redoStack = []; // Any new action clears the redo stack
                 lastCommittedState = editor.value; // Update to the new current state
@@ -1493,10 +1496,11 @@ Publish your work in various formats to suit any need.
                 redoStack.push(editor.value); // Save current state to redo stack
                 editor.value = undoStack.pop(); // Restore previous state
                 lastCommittedState = editor.value; // Update last known state after undo
-                updatePreview(false); // Update preview, don't push to undo stack again
+                updatePreview(); // Re-render preview
+                saveContent(); // Save to local storage
+                updateFileNameAndSave(false); // Update filename, but don't force if user changed it manually
                 editor.focus();
-                // Restore cursor position if possible (complex, so for now just end)
-                editor.selectionStart = editor.selectionEnd = editor.value.length;
+                editor.selectionStart = editor.selectionEnd = editor.value.length; // Move cursor to end
                 logAction('Undo applied.');
             } else {
                 logAction('Nothing to undo.');
@@ -1511,39 +1515,33 @@ Publish your work in various formats to suit any need.
                 undoStack.push(editor.value); // Save current state to undo stack
                 editor.value = redoStack.pop(); // Restore next state
                 lastCommittedState = editor.value; // Update last known state after redo
-                updatePreview(false); // Update preview, don't push to undo stack again
+                updatePreview(); // Re-render preview
+                saveContent(); // Save to local storage
+                updateFileNameAndSave(false); // Update filename, but don't force if user changed it manually
                 editor.focus();
-                // Restore cursor position if possible
-                editor.selectionStart = editor.selectionEnd = editor.value.length;
+                editor.selectionStart = editor.selectionEnd = editor.value.length; // Move cursor to end
                 logAction('Redo applied.');
             } else {
                 logAction('Nothing to redo.');
             }
         }
 
-        // updatePreview now accepts a parameter to optionally skip pushing to undo stack.
-        // This is useful when the call to updatePreview itself is a result of an undo/redo.
-        function updatePreview(pushToUndo = true) {
+        /**
+         * Renders the editor content to the preview panel and updates the status bar.
+         * This function no longer handles undo stack logic or saving to local storage directly.
+         */
+        function updatePreview() {
             const markdown = editor.value;
             editorContentLength = markdown.length;
-            if (pushToUndo) {
-                commitEditorStateForUndo(); // Save current state before potential modification
-            }
             try {
                 const html = marked.parse(markdown);
                 preview.innerHTML = html;
-
-                // KaTeX rendering is now handled directly by the marked.js extension.
-                // `marked.parse` will return HTML with KaTeX already rendered.
-                // No need for window.renderMathInElement here.
                 logAction('Document rendered.');
             } catch (e) {
                 preview.innerHTML = `<p style="color: red;">Markdown Rendering Error: ${e.message}</p>`;
                 logAction('Rendering failed due to error.');
             }
-
             updateStatus(markdown);
-            saveContent();
         }
 
         function updateStatus(markdown) {
@@ -1557,43 +1555,85 @@ Publish your work in various formats to suit any need.
         }
 
         /**
-         * Intelligently generates a sanitized filename from user input or markdown content.
-         * @returns {string} Sanitized filename
+         * Generates a creative and descriptive filename from markdown content.
+         * @param {string} markdownContent The raw markdown text from the editor.
+         * @returns {string} A sanitized, hyphen-separated, lowercase filename string.
          */
-        function generateFileName() {
-            let name = fileNameInput.value.trim();
-            const defaultName = "My New Document";
+        function generateCreativeFileName(markdownContent) {
+            let name = "";
+            const trimmedContent = markdownContent.trim();
 
-            // If user hasn't changed the default name, try to extract from content
-            if (!name || name === defaultName) {
-                const markdown = editor.value.trim();
+            if (!trimmedContent) return "untitled-document";
 
-                // 1. Try to find first H1
-                const h1Match = markdown.match(/^#\s+(.+)$/m);
-                if (h1Match) {
-                    name = h1Match[1];
+            // 1. Try to find first H1
+            let match = trimmedContent.match(/^#\s+(.+)$/m);
+            if (match) {
+                name = match[1];
+            } else {
+                // 2. Try to find first H2
+                match = trimmedContent.match(/^##\s+(.+)$/m);
+                if (match) {
+                    name = match[1];
                 } else {
-                    // 2. Fallback to first meaningful sentence (max 6 words)
-                    const firstLine = markdown.split('\n').find(line => line.trim().length > 0);
-                    if (firstLine) {
-                        name = firstLine.replace(/[#*`[\]()]/g, '').trim().split(/\s+/).slice(0, 6).join(' ');
+                    // 3. Fallback to first meaningful sentence (max 8 words), avoiding markdown special lines
+                    const firstMeaningfulLine = trimmedContent.split('\n').find(line =>
+                        line.trim() &&
+                        !line.trim().startsWith('---') &&
+                        !line.trim().startsWith('```') &&
+                        !line.trim().startsWith('$$') &&
+                        !line.trim().startsWith('>') && // Exclude blockquotes
+                        !line.trim().match(/^(\s*)(\d+\.|\*|\-|\+)\s/) // Exclude list items
+                    );
+                    if (firstMeaningfulLine) {
+                        name = firstMeaningfulLine
+                            .replace(/^[#*`\-+>1-9]\s+/g, '') // Remove markdown prefixes
+                            .replace(/[\[\]()!]/g, '')     // Remove link/image brackets
+                            .replace(/[\u0021-\u002F\u003A-\u0040\u005B-\u0060\u007B-\u007E]/g, '') // Remove most punctuation
+                            .trim()
+                            .split(/\s+/)
+                            .slice(0, 8) // Take up to 8 words
+                            .join(' ');
                     }
                 }
             }
 
-            if (!name) name = "untitled-document";
+            if (!name) name = "untitled-document"; // Final fallback
 
-            // Sanitize: No special characters, remove emojis, replace spaces with hyphens, trim
+            // Sanitize and format for file system
             return name
                 .replace(/[\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF]/g, '') // Remove emojis
-                .replace(/[^a-z0-9\s-]/gi, '') // Remove special chars
+                .replace(/[^a-z0-9\s-]/gi, '') // Remove special chars, keep spaces and hyphens
                 .trim()
                 .replace(/\s+/g, '-') // Spaces to hyphens
                 .substring(0, 50)
                 .toLowerCase();
         }
 
-        function saveContent() {
+        // Helper to capitalize words for display in the input field
+        function capitalizeWords(str) {
+            return str.replace(/\b\w/g, char => char.toUpperCase());
+        }
+
+        /**
+         * Updates the file name input field based on content, but only if appropriate.
+         * Saves the current content and filename to local storage.
+         * @param {boolean} forceUpdate If true, always updates filename if different from content; otherwise, heuristic.
+         */
+        function updateFileNameAndSave(forceUpdate = true) {
+            const currentEditorContent = editor.value;
+            const currentFileNameInput = fileNameInput.value.trim();
+            const defaultFileName = "My New Document";
+
+            const generatedRawName = generateCreativeFileName(currentEditorContent);
+            const generatedDisplayName = capitalizeWords(generatedRawName.replace(/-/g, ' '));
+
+            const currentFileNameAsSanitized = currentFileNameInput.toLowerCase().replace(/\s+/g, '-');
+
+            if (forceUpdate || currentFileNameInput === defaultFileName ||
+                (generatedRawName && generatedRawName !== currentFileNameAsSanitized)) {
+                fileNameInput.value = generatedDisplayName;
+            }
+
             localStorage.setItem(STORAGE_KEY, editor.value);
             localStorage.setItem(FILENAME_KEY, fileNameInput.value);
         }
@@ -1721,9 +1761,7 @@ Publish your work in various formats to suit any need.
         }
 
         // --- Find and Replace Feature ---
-        let currentMatchIndex = 0; // To keep track of the current highlighted match
-        let lastSearchTerm = '';
-        let matches = [];
+        // (Variables already defined globally at the top of the script)
 
         function toggleFindReplacePanel(focusInput = 'find') {
             findReplaceGroup.classList.toggle('hidden');
@@ -1738,7 +1776,7 @@ Publish your work in various formats to suit any need.
                 }
                 // IMPORTANT: Call findText with true to immediately highlight the first match.
                 // When opening the panel, we want the editor focused on the match.
-                findText(true, true); 
+                findText(true, true);
                 logAction('Find/Replace panel opened.');
             } else {
                 // Panel is hidden
@@ -1763,42 +1801,58 @@ Publish your work in various formats to suit any need.
 
             if (!searchTerm) {
                 matches = [];
+                currentMatchIndex = -1; // No matches selected
+                findStatus.textContent = '';
+                clearFindHighlighting();
                 logAction('Enter text to find.');
                 return;
             }
 
-            // If the search term has changed, or there were no matches previously, re-calculate matches
-            if (searchTerm !== lastSearchTerm || matches.length === 0) {
+            // Always re-calculate matches if search term changed or we need to refresh
+            if (searchTerm !== lastSearchTerm) {
                 const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
-                matches = [...content.matchAll(regex)];
-                currentMatchIndex = 0; // Reset index when a new search is performed
+                matches = [...content.matchAll(regex)].map(match => ({
+                    index: match.index,
+                    length: match[0].length,
+                    value: match[0]
+                }));
+                currentMatchIndex = -1; // Reset to no selected match
+                lastSearchTerm = searchTerm;
             }
 
             if (matches.length === 0) {
+                clearFindHighlighting();
                 logAction(`"${searchTerm}" not found.`);
                 findStatus.textContent = `0 matches`;
                 return;
             }
 
-            lastSearchTerm = searchTerm; // Store the last search term
+            // If no match is currently selected, select the first one
+            if (currentMatchIndex === -1 && matches.length > 0) {
+                currentMatchIndex = 0;
+            }
 
             logAction(`${matches.length} occurrences of "${searchTerm}" found.`);
 
-            if (selectMatch) {
+            if (selectMatch && currentMatchIndex !== -1) {
                 highlightMatch(currentMatchIndex, shouldFocusEditor);
                 findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
             } else {
+                // If not selecting a match (e.g., just updating counts), ensure status is correct
                 findStatus.textContent = `${matches.length} matches`;
             }
         }
 
         function findNext() {
-            // Ensure matches are up-to-date for the current search term
-            if (findInput.value !== lastSearchTerm || matches.length === 0) {
-                findText(false, true); // Re-run find if necessary, but don't auto-select
-                if (matches.length === 0) return;
+            // Re-find to ensure matches array is up-to-date and populated
+            // `findText` will ensure `lastSearchTerm` is correctly set and `matches` array is populated.
+            // It also ensures `currentMatchIndex` is set to 0 if previously -1 or if new search.
+            findText(false, false); // Don't highlight or focus editor yet
+
+            if (matches.length === 0) {
+                logAction(`No matches found for "${findInput.value}".`);
+                return;
             }
-            if (matches.length === 0) return;
 
             currentMatchIndex = (currentMatchIndex + 1) % matches.length;
             highlightMatch(currentMatchIndex, true);
@@ -1807,14 +1861,21 @@ Publish your work in various formats to suit any need.
         }
 
         function findPrevious() {
-            // Ensure matches are up-to-date for the current search term
-            if (findInput.value !== lastSearchTerm || matches.length === 0) {
-                findText(false, true); // Re-run find if necessary, but don't auto-select
-                if (matches.length === 0) return;
-            }
-            if (matches.length === 0) return;
+            // Re-find to ensure matches array is up-to-date and populated
+            findText(false, false); // Don't highlight or focus editor yet
 
-            currentMatchIndex = (currentMatchIndex - 1 + matches.length) % matches.length;
+            if (matches.length === 0) {
+                logAction(`No matches found for "${findInput.value}".`);
+                return;
+            }
+
+            // If currentMatchIndex is -1 (no match selected initially, or after a replace all)
+            // set it to the last match so previous wraps correctly.
+            if (currentMatchIndex === -1) {
+                currentMatchIndex = matches.length - 1;
+            } else {
+                currentMatchIndex = (currentMatchIndex - 1 + matches.length) % matches.length;
+            }
             highlightMatch(currentMatchIndex, true);
             findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
             logAction(`Moved to previous match.`);
@@ -1826,7 +1887,10 @@ Publish your work in various formats to suit any need.
 
             const match = matches[index];
             const matchStart = match.index;
-            const matchEnd = match.index + match[0].length;
+            // The 'match' object in the 'matches' array is already a transformed object
+            // { index: number, length: number, value: string }.
+            // Therefore, we should access 'match.length' directly, not 'match[0].length'.
+            const matchEnd = match.index + match.length;
 
             if (shouldFocusEditor) {
                 editor.focus();
@@ -1883,37 +1947,36 @@ Publish your work in various formats to suit any need.
                 return;
             }
 
-            const match = matches[currentMatchIndex];
-            const content = editor.value;
+            const matchToReplace = matches[currentMatchIndex];
+            const contentBefore = editor.value;
 
-            // For programmatic changes, we explicitly push the current editor state *before* modification.
-            undoStack.push(editor.value);
-            if (undoStack.length > MAX_UNDO_STACK_SIZE) {
-                undoStack.shift();
-            }
-            redoStack = []; // Any new action clears the redo stack
+            // Push current state to undo stack before modification
+            pushToUndoStack();
 
             // Perform replacement only at the current match's position
-            const newContent = content.substring(0, match.index) + replaceTerm + content.substring(match.index + match[0].length);
+            const newContent = contentBefore.substring(0, matchToReplace.index) + replaceTerm + contentBefore.substring(matchToReplace.index + matchToReplace.length);
 
             editor.value = newContent;
-            // IMPORTANT: After a programmatic change, update lastCommittedState to the new content
-            lastCommittedState = newContent;
+            lastCommittedState = newContent; // Update last committed state
 
-            // Re-find to update match positions and highlighting after replacement
-            // This is crucial because string length might change, invalidating old match indices
-            findText(false, true); // Don't auto-select first match after replace, just update internal matches array
+            // Re-evaluate matches as string length and indices have changed.
+            // This will reset `matches` and `currentMatchIndex`.
+            findText(false, false); // Just re-populate matches, don't auto-select/highlight yet.
 
-            // After replacement, move to the next match (or the first if it was the last)
             if (matches.length > 0) {
-                currentMatchIndex = currentMatchIndex % matches.length; // Adjust if current index is now out of bounds
+                // If there are still matches, try to select the one that corresponds to the 'next' logical match
+                // After replacing match N, we ideally want to select match N (which is now at a new index) or N+1.
+                // Simple approach: advance to the "next" match in the new set, if any.
+                currentMatchIndex = currentMatchIndex % matches.length;
                 highlightMatch(currentMatchIndex, true);
                 findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
             } else {
-                clearFindHighlighting();
+                clearFindHighlighting(); // No more matches
             }
 
-            updatePreview(false); // Update preview after content change, but don't push to undo stack again
+            updatePreview(); // Re-render preview
+            saveContent(); // Save
+            updateFileNameAndSave(false); // Update filename, but don't force
             logAction(`Replaced current occurrence of "${searchTerm}".`);
         }
 
@@ -1941,19 +2004,26 @@ Publish your work in various formats to suit any need.
             if (content === newContent) {
                 logAction(`"${searchTerm}" not found, no replacements made.`);
                 findStatus.textContent = `0 replacements`;
-                // If no actual change, pop the state we just pushed for this action.
-                undoStack.pop();
-                // lastCommittedState does not need to be reset here; it will correctly reflect
-                // the content before this failed replacement, which is what we want.
+                // If no actual change, no undo state needs to be pushed.
                 return;
             }
-            // IMPORTANT: After a programmatic change, update lastCommittedState to the new content
-            lastCommittedState = newContent;
 
-            const replacementsMade = (content.match(regex) || []).length;
+            // Since a change *will* occur, push the *current* state of the editor to the undo stack.
+            // This captures the content *before* the replacement.
+            undoStack.push(editor.value);
+            if (undoStack.length > MAX_UNDO_STACK_SIZE) {
+                undoStack.shift();
+            }
+            redoStack = []; // Any new action clears the redo stack
 
-            editor.value = newContent;
-            updatePreview(false); // Update preview, but don't push to undo stack again
+            const replacementsMade = (content.match(regex) || []).length; // Count replacements based on original content
+
+            editor.value = newContent; // Apply the new content
+            lastCommittedState = newContent; // Update last committed state to the new content
+
+            updatePreview(); // Re-render preview
+            saveContent(); // Save
+            updateFileNameAndSave(false); // Update filename, but don't force
             logAction(`${replacementsMade} occurrences of "${searchTerm}" replaced.`);
             findStatus.textContent = `${replacementsMade} replacements`;
             clearFindHighlighting(); // Clear matches after replacement
@@ -1984,14 +2054,12 @@ Publish your work in various formats to suit any need.
                     undo();
                 }
             } else if (isCtrlOrCmd && (e.key === 'y' || (isShift && e.key === 'Z'))) { // Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z for Redo
-                 if (e.target === editor) {
+                // Prioritize editor undo/redo if focused, otherwise allow browser default for inputs, or apply to editor if elsewhere.
+                 if (e.target === editor || (!findReplaceGroup.classList.contains('hidden') && (e.target !== findInput && e.target !== replaceInput))) {
                     e.preventDefault();
                     redo();
                 } else if (!findReplaceGroup.classList.contains('hidden') && (e.target === findInput || e.target === replaceInput)) {
                     // Let browser handle redo for find/replace inputs
-                } else {
-                    e.preventDefault();
-                    redo();
                 }
             }
 
@@ -2244,6 +2312,14 @@ markdown_content: |
             logAction(`PDF Preview: ${pdfTheme} theme, ${margin} margin.`);
         }
 
+        /**
+         * Saves the current editor content to local storage.
+         * This is a utility function called by various features (input, undo/redo, replace).
+         */
+        function saveContent() {
+            localStorage.setItem(STORAGE_KEY, editor.value);
+        }
+
         function downloadFile(filename, data, mimeType) {
             const blob = new Blob([data], { type: mimeType });
             const url = URL.createObjectURL(blob);
@@ -2324,14 +2400,14 @@ markdown_content: |
                 if (correctedText === text) {
                     logAction("AI Grammar Checker: No improvements needed.");
                 } else {
-                    // Record undo state
-                    undoStack.push(editor.value);
-                    if (undoStack.length > MAX_UNDO_STACK_SIZE) undoStack.shift();
-                    redoStack = [];
+                    // Record undo state before modification
+                    pushToUndoStack();
 
                     editor.value = correctedText;
-                    lastCommittedState = correctedText;
-                    updatePreview(false);
+                    lastCommittedState = correctedText; // Update last committed state
+                    updatePreview(); // Re-render preview
+                    saveContent(); // Save
+                    updateFileNameAndSave(false); // Update filename, but don't force
                     logAction("AI Grammar Checker: Improvements applied successfully.");
                 }
             } catch (err) {
@@ -2346,7 +2422,7 @@ markdown_content: |
             // 1. Load content
             const savedContent = localStorage.getItem(STORAGE_KEY);
             editor.value = savedContent !== null ? savedContent : WELCOME_TEMPLATE;
-            lastCommittedState = editor.value; // Initialize the last committed state for undo/redo logic
+            lastCommittedState = editor.value; // Initialize the last committed state for undo/redo logic (essential for first undo)
 
             // 2. Load filename
             const savedFilename = localStorage.getItem(FILENAME_KEY);
@@ -2409,7 +2485,11 @@ markdown_content: |
                         const lineStart = start - lastLine.length;
                         editor.value = editor.value.substring(0, lineStart) + "\n" + editor.value.substring(start);
                         editor.selectionStart = editor.selectionEnd = lineStart + 1;
+                        // Manual content change, so manually update undo stack and re-render
+                        pushToUndoStack();
                         updatePreview();
+                        saveContent();
+                        updateFileNameAndSave(false);
                     } else if (unorderedMatch) {
                         e.preventDefault();
                         const indent = unorderedMatch[1];
@@ -2429,9 +2509,14 @@ markdown_content: |
             function insertAtCursor(text) {
                 const start = editor.selectionStart;
                 const end = editor.selectionEnd;
+                // Before modifying, save current state to undo stack
+                pushToUndoStack();
                 editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
                 editor.selectionStart = editor.selectionEnd = start + text.length;
+                lastCommittedState = editor.value; // Update last committed state after programmatic change
                 updatePreview();
+                saveContent();
+                updateFileNameAndSave(false);
             }
 
             /**
@@ -2458,6 +2543,7 @@ markdown_content: |
                             logAction(`Embedding image: ${file.name}...`);
                             const base64 = await fileToBase64(file);
                             const markdownImage = `\n![${file.name}](${base64})\n`;
+                            // Use insertAtCursor which handles undo/save/updatePreview
                             insertAtCursor(markdownImage);
                         } catch (err) {
                             console.error("Image embedding failed:", err);
@@ -2506,16 +2592,56 @@ markdown_content: |
                 }
             });
 
-            // 5. Setup Real-time input listener
-            editor.addEventListener('input', updatePreview);
+            // 5. Setup Real-time input listener with debounce for heavy ops
+            editor.addEventListener('input', () => {
+                // 1. Immediately update status bar (character count, etc.) for responsiveness
+                updateStatus(editor.value);
 
-            // 6. Setup scroll sync listeners (FIXED to target editor and preview directly)
+                // 2. Clear any pending debounced actions
+                clearTimeout(editorInputDebounceTimeout);
+
+                // 3. Set a new debounce timer for heavy operations
+                editorInputDebounceTimeout = setTimeout(() => {
+                    pushToUndoStack(); // This captures the previous state, then updates `lastCommittedState` to current
+                    updatePreview(); // Re-render preview
+                    saveContent(); // Save to local storage
+                    updateFileNameAndSave(); // Generate and update filename if needed
+                }, AUTO_SAVE_DELAY);
+            });
+
+            // 6. Setup scroll sync listeners
             editor.addEventListener('scroll', () => syncScroll(editor, preview));
             preview.addEventListener('scroll', () => syncScroll(preview, editor));
 
             // 7. Setup Find & Replace listeners
             toggleFindReplaceButton.addEventListener('click', () => toggleFindReplacePanel('find'));
             closeFindReplaceButton.addEventListener('click', () => toggleFindReplacePanel());
+
+            findPrevButton.addEventListener('click', findPrevious);
+            findNextButton.addEventListener('click', findNext);
+            replaceButton.addEventListener('click', replaceCurrent);
+            replaceAllButton.addEventListener('click', replaceAll);
+            swapFindReplaceButton.addEventListener('click', swapFindReplace);
+            clearFindReplaceButton.addEventListener('click', clearFindAndReplaceFields);
+
+            findInput.addEventListener('input', () => {
+                if (!findInput.value) {
+                    clearFindHighlighting();
+                    findStatus.textContent = '';
+                    return;
+                }
+                findText(true, false); // Highlight first match, keep focus in find input
+            });
+            // Ensure `replaceInput` also triggers a find update to recalculate matches if needed
+            replaceInput.addEventListener('input', () => {
+                if (!findInput.value) { // Only update if findInput has a value
+                    clearFindHighlighting();
+                    findStatus.textContent = '';
+                    return;
+                }
+                findText(true, false);
+            });
+
 
             // 8. Setup PDF Settings listeners
             const pdfSettingsBtn = document.getElementById('toggle-pdf-settings-button');
@@ -2524,39 +2650,17 @@ markdown_content: |
 
             pdfSettingsBtn.addEventListener('click', () => {
                 pdfSettingsGroup.classList.toggle('hidden');
-                // NEW: Set the flag when the user explicitly clicks the PDF settings button
-                pdfSettingsExplicitlyOpened = true;
+                pdfSettingsExplicitlyOpened = true; // User explicitly opened settings
                 logAction(pdfSettingsGroup.classList.contains('hidden') ? 'PDF Settings closed.' : 'PDF Settings opened.');
             });
 
             closePdfBtn.addEventListener('click', () => {
                 pdfSettingsGroup.classList.add('hidden');
             });
-            findPrevButton.addEventListener('click', findPrevious);
-            findNextButton.addEventListener('click', findNext);
-            replaceButton.addEventListener('click', replaceCurrent);
-            replaceAllButton.addEventListener('click', replaceAll);
-            swapFindReplaceButton.addEventListener('click', swapFindReplace);
-            clearFindReplaceButton.addEventListener('click', clearFindAndReplaceFields); // Added listener for clear button
 
-            findInput.addEventListener('input', () => {
-                // If the search term is empty, clear matches and status
-                if (!findInput.value) {
-                    clearFindHighlighting();
-                    findStatus.textContent = ''; // Also clear status text
-                    return;
-                }
-
-                // When user types, always re-run findText with selection to update highlights in real-time.
-                // We pass false to shouldFocusEditor so focus stays in the find input field.
-                findText(true, false);
-            });
-
-            // These keydown listeners are now handled by the global document keydown listener
-            // to support Shift+Enter for findPrevious, and consolidate behavior.
-
-            // Initial render
+            // Initial render and filename update (after content is loaded)
             updatePreview();
+            updateFileNameAndSave(); // Initial update after content loaded
 
             logAction('ZenWrite loaded successfully. Scroll sync is active.');
         }

@@ -337,109 +337,6 @@
             box-shadow: 0 1px 0 var(--link-color);
         }
 
-        /* --- FIND AND REPLACE STYLING IMPROVEMENTS --- */
-        .find-replace-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid var(--border-color);
-            padding: 5px 8px;
-            border-radius: 6px;
-            background-color: var(--control-bg);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow to make it pop slightly */
-            transition: background-color var(--transition-speed), border-color var(--transition-speed), box-shadow var(--transition-speed);
-        }
-
-        .find-replace-group input[type="text"],
-        .find-replace-group textarea { /* Apply common styles to both input and textarea */
-            /* Now explicitly style as an input/textarea, not just text */
-            padding: 7px 10px; /* Internal padding for inputs */
-            border: 1px solid var(--panel-border); /* Subtle border for inputs */
-            border-radius: 4px; /* Slightly smaller radius for inputs within group */
-            background-color: var(--editor-bg); /* Use editor-bg for input background */
-            color: var(--text-color); /* General text color for input values */
-            font-size: 14px;
-            width: 120px; /* Fixed width on desktop, can be wider */
-            transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
-            resize: none; /* Disable default resize for inputs, let textarea handle it */
-            line-height: 1.5; /* Ensure consistent line height */
-        }
-
-        .find-replace-group textarea {
-            min-height: 34px; /* Match the visual height of a single-line input */
-            max-height: 80px; /* Allow it to grow up to a certain point */
-            overflow-y: auto; /* Enable internal scrolling if content exceeds max-height */
-            resize: vertical; /* Allow vertical resizing by the user */
-        }
-
-        .find-replace-group input[type="text"]::placeholder {
-            color: var(--text-color);
-            opacity: 0.6;
-        }
-
-        .find-replace-group input[type="text"]:focus {
-            outline: none;
-            border-color: var(--accent-color); /* Highlight border on focus */
-            box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb, 59, 130, 246), 0.2); /* Subtle glow */
-        }
-
-        /* Specific styles for find/replace buttons */
-        .find-replace-group button {
-            padding: 6px 10px; /* Slightly more compact buttons */
-            font-size: 13px; /* Slightly smaller font */
-            min-width: auto;
-            border-radius: 4px;
-        }
-
-        /* Emphasize Replace and Replace All buttons */
-        #replace-button, #replace-all-button {
-            background-color: var(--accent-color);
-            color: var(--header-bg); /* Text contrasts with accent */
-            border-color: var(--accent-color);
-        }
-
-        #replace-button:hover, #replace-all-button:hover {
-            background-color: color-mix(in srgb, var(--accent-color) 85%, black); /* Slightly darker accent on hover */
-            color: var(--header-bg);
-        }
-
-        #replace-button:active, #replace-all-button:active {
-            background-color: color-mix(in srgb, var(--accent-color) 70%, black); /* Even darker on active */
-        }
-
-        /* Style for the close button */
-        #close-find-replace-button {
-            background: transparent;
-            border: none;
-            color: var(--text-color); /* Default text color, not accent */
-            font-weight: normal;
-            font-size: 16px;
-            padding: 4px 8px; /* More compact */
-        }
-
-        #close-find-replace-button:hover {
-            background-color: var(--control-hover-bg);
-            border-color: transparent;
-            color: var(--accent-color);
-            transform: none; /* No lift for close button */
-        }
-
-        #close-find-replace-button:active {
-            background-color: var(--control-active-bg);
-            color: var(--accent-color);
-            transform: none;
-            box-shadow: none;
-        }
-
-        /* Find Status Text */
-        #find-status {
-            margin-left: 5px;
-            color: var(--accent-color);
-            font-weight: 600;
-            font-size: 13px;
-            white-space: nowrap;
-        }
-
         /* --- Scrollbar Customization (WebKit Browsers) --- */
 
         /* Overall scrollbar width/height */
@@ -698,7 +595,7 @@
 
             /* 2. Hide UI Chrome */
             header, #editor-container, #status-bar, footer, .control-group, 
-            #toggle-find-replace-button, .find-replace-group, #pdf-settings-group {
+            #pdf-settings-group {
                 display: none !important;
             }
 
@@ -852,46 +749,9 @@
 
             /* Hide non-essential color pickers on small screens to save space */
             .color-picker-label {
-                display: none;
+                display: flex; /* Re-enable for mobile if enough space */
             }
-
-            /* Show color pickers if they are the only controls left or if there's enough space */
-            .control-group:last-of-type .color-picker-label {
-                 display: flex;
-            }
-
-            /* --- Find/Replace Specific Mobile Fixes --- */
-            .find-replace-group {
-                width: 100%; /* Take full width like other control groups */
-                justify-content: flex-start;
-                align-items: center;
-                padding: 5px;
-                gap: 5px;
-            }
-
-            .find-replace-group input[type="text"],
-            .find-replace-group textarea { /* Apply mobile styles to both input and textarea */
-                flex-grow: 1; /* Allow inputs to expand */
-                width: auto; /* Override fixed width */
-                min-width: 50px;
-                font-size: 13px;
-                padding: 6px 8px;
-                border: 1px solid var(--border-color); /* Ensure visible border on mobile */
-                height: auto; /* Allow textarea to size itself */
-                min-height: 30px; /* Min height for textarea on mobile */
-                max-height: 60px; /* Max height for textarea on mobile */
-                resize: vertical; /* Allow resizing */
-            }
-
-            .find-replace-group button {
-                flex-shrink: 0;
-                font-size: 12px;
-                padding: 5px 8px;
-            }
-            /* Adjust close button for better mobile appearance */
-            #close-find-replace-button {
-                padding: 5px 8px;
-            }
+            /* Removing specific rules for .find-replace-group as it is removed */
 
             /* 3. Status Bar: Stack stats vertically on smaller screens */
             #status-bar {
@@ -921,6 +781,7 @@
             <button class="markdown-control" onclick="insertMarkdownTag('1. ', '')" title="Numbered List">1.</button>
             <button class="markdown-control" onclick="insertMarkdownTag('`','`', 'code')" title="Inline Code">Code</button>
             <button class="markdown-control" onclick="checkGrammarAI()" title="AI Grammar Fix (Simulated)">✨ Fix Grammar</button>
+            <button class="markdown-control" onclick="triggerBrowserFind()" title="Open Browser Find (Ctrl+F/Cmd+F)">🔍 Find</button>
             
             <div class="dropdown-container">
                 <button class="markdown-control" id="more-tools-trigger" title="More Formatting Options">More ▾</button>
@@ -1015,7 +876,6 @@
             <button onclick="document.getElementById('file-upload').click()" title="Load file into editor">Import</button>
             <button id="toggle-pdf-settings-button" title="Customize PDF Layout">PDF Settings</button>
             <button onclick="resetApplication()" title="Clear saved content, themes, and settings.">Reset App</button>
-            <button id="toggle-find-replace-button" title="Find and Replace (Ctrl+F)">Search</button>
         </div>
 
         <!-- PDF CUSTOMIZATION CONTROLS -->
@@ -1062,19 +922,6 @@
             </label>
             <button id="close-pdf-settings" title="Close Settings">✕</button>
         </div>
-
-        <!-- FIND & REPLACE CONTROLS - Initially hidden -->
-        <div class="control-group find-replace-group hidden">
-            <textarea id="find-input" placeholder="Find..." title="Text to find (Ctrl+F)" rows="1"></textarea>
-            <textarea id="replace-input" placeholder="Replace with..." title="Text to replace with" rows="1"></textarea>
-            <button id="find-prev-button" title="Find previous occurrence (Shift+Enter)">Prev</button>
-            <button id="find-next-button" title="Find next occurrence (Enter)">Next</button>
-            <button id="swap-find-replace-button" title="Swap Find and Replace inputs (Ctrl+Shift+S)">⇄</button>
-            <button id="replace-button" title="Replace current occurrence">Replace</button>
-            <button id="replace-all-button" title="Replace all occurrences (Ctrl+Shift+H)">Replace All</button>
-            <button id="clear-find-replace-button" title="Clear Find and Replace fields">Clear</button>
-            <button id="close-find-replace-button" title="Close (Esc)">✕</button>
-        </div>
     </header>
 
     <!-- Hidden elements for potential future use or debugging, kept outside main flow -->
@@ -1102,7 +949,6 @@
             <span id="char-count">Characters: 0</span>
             <span id="word-count">Words: 0</span>
             <span id="line-count">Lines: 0</span>
-            <span id="find-status"></span> <!-- Added for find/replace status -->
         </div>
     </footer>
 
@@ -1116,20 +962,6 @@
         // --- NEW: Global flag to track if PDF settings were explicitly opened ---
         let pdfSettingsExplicitlyOpened = false;
 
-        // Find & Replace elements
-        const toggleFindReplaceButton = document.getElementById('toggle-find-replace-button');
-        const findReplaceGroup = document.querySelector('.find-replace-group');
-        const findInput = document.getElementById('find-input');
-        const replaceInput = document.getElementById('replace-input');
-        const findPrevButton = document.getElementById('find-prev-button');
-        const findNextButton = document.getElementById('find-next-button');
-        const replaceButton = document.getElementById('replace-button');
-        const replaceAllButton = document.getElementById('replace-all-button');
-        const closeFindReplaceButton = document.getElementById('close-find-replace-button');
-        const findStatus = document.getElementById('find-status');
-        const swapFindReplaceButton = document.getElementById('swap-find-replace-button');
-        const clearFindReplaceButton = document.getElementById('clear-find-replace-button'); // Added
-
         // Undo/Redo Management
         let undoStack = [];
         let redoStack = [];
@@ -1141,11 +973,6 @@
         // Debounce timeouts
         let editorInputDebounceTimeout;
         const AUTO_SAVE_DELAY = 1000; // milliseconds for debounced update/save
-
-        // Find & Replace state
-        let currentMatchIndex = -1; // -1 indicates no match selected
-        let lastSearchTerm = '';
-        let matches = []; // Stores { index: number, length: number, value: string }
 
         // Storage Keys
         const STORAGE_KEY = 'zenwrite_content';
@@ -1443,9 +1270,6 @@ Publish your work in various formats to suit any need.
             clearTimeout(window.logTimeout);
             window.logTimeout = setTimeout(() => {
                 actionLog.style.opacity = 0;
-                if (!findInput.value && !replaceInput.value) { // Clear find status only if search is inactive
-                    findStatus.textContent = '';
-                }
             }, 2500);
         }
 
@@ -1749,292 +1573,6 @@ Publish your work in various formats to suit any need.
             logAction(`Inserted markdown tag: ${startTag.trim()}`);
         }
 
-        /**
-         * Clears the find and replace input fields and resets the search status.
-         */
-        function clearFindAndReplaceFields() {
-            findInput.value = '';
-            replaceInput.value = '';
-            clearFindHighlighting();
-            findInput.focus();
-            logAction('Find and Replace fields cleared.');
-        }
-
-        // --- Find and Replace Feature ---
-        // (Variables already defined globally at the top of the script)
-
-        function toggleFindReplacePanel(focusInput = 'find') {
-            findReplaceGroup.classList.toggle('hidden');
-            if (!findReplaceGroup.classList.contains('hidden')) {
-                // Panel is shown
-                if (focusInput === 'find') {
-                    findInput.focus();
-                    findInput.select();
-                } else if (focusInput === 'replace') {
-                    replaceInput.focus();
-                    replaceInput.select();
-                }
-                // IMPORTANT: Call findText with true to immediately highlight the first match.
-                // When opening the panel, we want the editor focused on the match.
-                findText(true, true);
-                logAction('Find/Replace panel opened.');
-            } else {
-                // Panel is hidden
-                clearFindHighlighting();
-                logAction('Find/Replace panel closed.');
-            }
-        }
-
-        function clearFindHighlighting() {
-            editor.setSelectionRange(editor.selectionStart, editor.selectionStart); // Clear selection
-            matches = [];
-            currentMatchIndex = 0;
-            lastSearchTerm = '';
-            findStatus.textContent = '';
-        }
-
-        function findText(selectMatch = true, shouldFocusEditor = true) {
-            const searchTerm = findInput.value;
-            const content = editor.value;
-
-            findStatus.textContent = ''; // Clear previous status
-
-            if (!searchTerm) {
-                matches = [];
-                currentMatchIndex = -1; // No matches selected
-                findStatus.textContent = '';
-                clearFindHighlighting();
-                logAction('Enter text to find.');
-                return;
-            }
-
-            // Always re-calculate matches if search term changed or we need to refresh
-            if (searchTerm !== lastSearchTerm) {
-                const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
-                matches = [...content.matchAll(regex)].map(match => ({
-                    index: match.index,
-                    length: match[0].length,
-                    value: match[0]
-                }));
-                currentMatchIndex = -1; // Reset to no selected match
-                lastSearchTerm = searchTerm;
-            }
-
-            if (matches.length === 0) {
-                clearFindHighlighting();
-                logAction(`"${searchTerm}" not found.`);
-                findStatus.textContent = `0 matches`;
-                return;
-            }
-
-            // If no match is currently selected, select the first one
-            if (currentMatchIndex === -1 && matches.length > 0) {
-                currentMatchIndex = 0;
-            }
-
-            logAction(`${matches.length} occurrences of "${searchTerm}" found.`);
-
-            if (selectMatch && currentMatchIndex !== -1) {
-                highlightMatch(currentMatchIndex, shouldFocusEditor);
-                findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
-            } else {
-                // If not selecting a match (e.g., just updating counts), ensure status is correct
-                findStatus.textContent = `${matches.length} matches`;
-            }
-        }
-
-        function findNext() {
-            // Re-find to ensure matches array is up-to-date and populated
-            // `findText` will ensure `lastSearchTerm` is correctly set and `matches` array is populated.
-            // It also ensures `currentMatchIndex` is set to 0 if previously -1 or if new search.
-            findText(false, false); // Don't highlight or focus editor yet
-
-            if (matches.length === 0) {
-                logAction(`No matches found for "${findInput.value}".`);
-                return;
-            }
-
-            currentMatchIndex = (currentMatchIndex + 1) % matches.length;
-            highlightMatch(currentMatchIndex, true);
-            findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
-            logAction(`Moved to next match.`);
-        }
-
-        function findPrevious() {
-            // Re-find to ensure matches array is up-to-date and populated
-            findText(false, false); // Don't highlight or focus editor yet
-
-            if (matches.length === 0) {
-                logAction(`No matches found for "${findInput.value}".`);
-                return;
-            }
-
-            // If currentMatchIndex is -1 (no match selected initially, or after a replace all)
-            // set it to the last match so previous wraps correctly.
-            if (currentMatchIndex === -1) {
-                currentMatchIndex = matches.length - 1;
-            } else {
-                currentMatchIndex = (currentMatchIndex - 1 + matches.length) % matches.length;
-            }
-            highlightMatch(currentMatchIndex, true);
-            findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
-            logAction(`Moved to previous match.`);
-        }
-
-
-        function highlightMatch(index, shouldFocusEditor = true) {
-            if (matches.length === 0 || index < 0 || index >= matches.length) return;
-
-            const match = matches[index];
-            const matchStart = match.index;
-            // The 'match' object in the 'matches' array is already a transformed object
-            // { index: number, length: number, value: string }.
-            // Therefore, we should access 'match.length' directly, not 'match[0].length'.
-            const matchEnd = match.index + match.length;
-
-            if (shouldFocusEditor) {
-                editor.focus();
-            }
-            editor.setSelectionRange(matchStart, matchEnd); // Select the matched text
-
-            // Calculate line number of the match start for scrolling
-            const textBefore = editor.value.substring(0, matchStart);
-            const startLineNumber = textBefore.split('\n').length - 1; // 0-indexed line number
-
-            // Get computed style for accurate line height and padding
-            const computedStyle = window.getComputedStyle(editor);
-            const fontSize = parseFloat(computedStyle.fontSize);
-            let actualLineHeight = parseFloat(computedStyle.lineHeight);
-
-            // Handle unitless line-height (e.g., '1.7') or 'normal'
-            if (isNaN(actualLineHeight) || actualLineHeight === 0) {
-                const unitlessLineHeight = parseFloat(computedStyle.lineHeight);
-                if (!isNaN(unitlessLineHeight)) {
-                    actualLineHeight = unitlessLineHeight * fontSize;
-                } else {
-                    actualLineHeight = 1.7 * fontSize; // Fallback to CSS defined ratio
-                }
-            }
-            // Note: paddingTop is less critical for centering a line, but useful for absolute positioning
-            // const paddingTop = parseFloat(computedStyle.paddingTop);
-
-            // Calculate target scrollTop to center the line vertically within the editor's visible area
-            let targetScrollTop = (startLineNumber * actualLineHeight) - (editor.clientHeight / 2) + (actualLineHeight / 2);
-
-            // Ensure scroll position is within valid bounds
-            targetScrollTop = Math.max(0, targetScrollTop);
-            targetScrollTop = Math.min(targetScrollTop, editor.scrollHeight - editor.clientHeight);
-
-            editor.scrollTop = targetScrollTop;
-
-            logAction(`Match ${index + 1} highlighted and scrolled into view.`);
-        }
-
-        function swapFindReplace() {
-            const temp = findInput.value;
-            findInput.value = replaceInput.value;
-            replaceInput.value = temp;
-            findInput.focus();
-            logAction('Swapped Find and Replace inputs.');
-        }
-
-        function replaceCurrent() {
-            const searchTerm = findInput.value;
-            const replaceTerm = replaceInput.value;
-
-            if (!searchTerm || matches.length === 0 || currentMatchIndex === -1) {
-                logAction('No text to replace or no match selected.');
-                return;
-            }
-
-            const matchToReplace = matches[currentMatchIndex];
-            const contentBefore = editor.value;
-
-            // Push current state to undo stack before modification
-            pushToUndoStack();
-
-            // Perform replacement only at the current match's position
-            const newContent = contentBefore.substring(0, matchToReplace.index) + replaceTerm + contentBefore.substring(matchToReplace.index + matchToReplace.length);
-
-            editor.value = newContent;
-            lastCommittedState = newContent; // Update last committed state
-
-            // Re-evaluate matches as string length and indices have changed.
-            // This will reset `matches` and `currentMatchIndex`.
-            findText(false, false); // Just re-populate matches, don't auto-select/highlight yet.
-
-            if (matches.length > 0) {
-                // If there are still matches, try to select the one that corresponds to the 'next' logical match
-                // After replacing match N, we ideally want to select match N (which is now at a new index) or N+1.
-                // Simple approach: advance to the "next" match in the new set, if any.
-                currentMatchIndex = currentMatchIndex % matches.length;
-                highlightMatch(currentMatchIndex, true);
-                findStatus.textContent = `${currentMatchIndex + 1} of ${matches.length}`;
-            } else {
-                clearFindHighlighting(); // No more matches
-            }
-
-            updatePreview(); // Re-render preview
-            saveContent(); // Save
-            updateFileNameAndSave(false); // Update filename, but don't force
-            logAction(`Replaced current occurrence of "${searchTerm}".`);
-        }
-
-        function replaceAll() {
-            const searchTerm = findInput.value;
-            const replaceTerm = replaceInput.value;
-            let content = editor.value;
-
-            if (!searchTerm) {
-                logAction('Enter text to find before replacing.');
-                return;
-            }
-
-            // For programmatic changes, we explicitly push the current editor state *before* modification.
-            undoStack.push(editor.value);
-            if (undoStack.length > MAX_UNDO_STACK_SIZE) {
-                undoStack.shift();
-            }
-            redoStack = []; // Any new action clears the redo stack
-
-            // Using global regex for replacement
-            const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
-            const newContent = content.replace(regex, replaceTerm);
-
-            if (content === newContent) {
-                logAction(`"${searchTerm}" not found, no replacements made.`);
-                findStatus.textContent = `0 replacements`;
-                // If no actual change, no undo state needs to be pushed.
-                return;
-            }
-
-            // Since a change *will* occur, push the *current* state of the editor to the undo stack.
-            // This captures the content *before* the replacement.
-            undoStack.push(editor.value);
-            if (undoStack.length > MAX_UNDO_STACK_SIZE) {
-                undoStack.shift();
-            }
-            redoStack = []; // Any new action clears the redo stack
-
-            const replacementsMade = (content.match(regex) || []).length; // Count replacements based on original content
-
-            editor.value = newContent; // Apply the new content
-            lastCommittedState = newContent; // Update last committed state to the new content
-
-            updatePreview(); // Re-render preview
-            saveContent(); // Save
-            updateFileNameAndSave(false); // Update filename, but don't force
-            logAction(`${replacementsMade} occurrences of "${searchTerm}" replaced.`);
-            findStatus.textContent = `${replacementsMade} replacements`;
-            clearFindHighlighting(); // Clear matches after replacement
-            editor.focus();
-        }
-
-        // Helper function to escape special characters for RegExp
-        function escapeRegExp(string) {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-        }
-
         // --- Keyboard Shortcuts ---
         document.addEventListener('keydown', (e) => {
             const isCtrlOrCmd = e.ctrlKey || e.metaKey; // Ctrl for Windows/Linux, Cmd for Mac
@@ -2045,21 +1583,14 @@ Publish your work in various formats to suit any need.
                 if (e.target === editor) {
                     e.preventDefault();
                     undo();
-                } else if (!findReplaceGroup.classList.contains('hidden') && (e.target === findInput || e.target === replaceInput)) {
-                    // Let browser handle undo for find/replace inputs
                 } else {
-                    // If editor is not focused but active element is not find/replace,
-                    // assume user wants to undo editor changes
                     e.preventDefault();
                     undo();
                 }
             } else if (isCtrlOrCmd && (e.key === 'y' || (isShift && e.key === 'Z'))) { // Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z for Redo
-                // Prioritize editor undo/redo if focused, otherwise allow browser default for inputs, or apply to editor if elsewhere.
-                 if (e.target === editor || (!findReplaceGroup.classList.contains('hidden') && (e.target !== findInput && e.target !== replaceInput))) {
+                 if (e.target === editor) {
                     e.preventDefault();
                     redo();
-                } else if (!findReplaceGroup.classList.contains('hidden') && (e.target === findInput || e.target === replaceInput)) {
-                    // Let browser handle redo for find/replace inputs
                 }
             }
 
@@ -2071,32 +1602,6 @@ Publish your work in various formats to suit any need.
                 } else if (e.key === 'i') {
                     e.preventDefault();
                     insertMarkdownTag('*','*', 'italic text');
-                } else if (isShift && e.key === 's') { // Ctrl+Shift+S for Swap Find/Replace
-                    e.preventDefault();
-                    swapFindReplace();
-                }
-            }
-
-            // Find & Replace shortcuts
-            if (isCtrlOrCmd && e.key === 'f') { // Ctrl+F for Find
-                e.preventDefault();
-                toggleFindReplacePanel('find');
-            } else if (isCtrlOrCmd && e.key === 'h') { // Ctrl+H for Replace
-                e.preventDefault();
-                toggleFindReplacePanel('replace');
-            } else if (e.key === 'Escape' && !findReplaceGroup.classList.contains('hidden')) { // Esc to close find/replace
-                e.preventDefault();
-                toggleFindReplacePanel(); // Toggles to close
-                editor.focus(); // Return focus to editor
-            } else if (document.activeElement === findInput || document.activeElement === replaceInput) { // Use document.activeElement
-                // Enter key behavior in find/replace inputs
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (isShift) {
-                        findPrevious();
-                    } else {
-                        findNext();
-                    }
                 }
             }
         });
@@ -2613,37 +2118,7 @@ markdown_content: |
             editor.addEventListener('scroll', () => syncScroll(editor, preview));
             preview.addEventListener('scroll', () => syncScroll(preview, editor));
 
-            // 7. Setup Find & Replace listeners
-            toggleFindReplaceButton.addEventListener('click', () => toggleFindReplacePanel('find'));
-            closeFindReplaceButton.addEventListener('click', () => toggleFindReplacePanel());
-
-            findPrevButton.addEventListener('click', findPrevious);
-            findNextButton.addEventListener('click', findNext);
-            replaceButton.addEventListener('click', replaceCurrent);
-            replaceAllButton.addEventListener('click', replaceAll);
-            swapFindReplaceButton.addEventListener('click', swapFindReplace);
-            clearFindReplaceButton.addEventListener('click', clearFindAndReplaceFields);
-
-            findInput.addEventListener('input', () => {
-                if (!findInput.value) {
-                    clearFindHighlighting();
-                    findStatus.textContent = '';
-                    return;
-                }
-                findText(true, false); // Highlight first match, keep focus in find input
-            });
-            // Ensure `replaceInput` also triggers a find update to recalculate matches if needed
-            replaceInput.addEventListener('input', () => {
-                if (!findInput.value) { // Only update if findInput has a value
-                    clearFindHighlighting();
-                    findStatus.textContent = '';
-                    return;
-                }
-                findText(true, false);
-            });
-
-
-            // 8. Setup PDF Settings listeners
+            // 7. Setup PDF Settings listeners
             const pdfSettingsBtn = document.getElementById('toggle-pdf-settings-button');
             const pdfSettingsGroup = document.getElementById('pdf-settings-group');
             const closePdfBtn = document.getElementById('close-pdf-settings');
@@ -2663,6 +2138,12 @@ markdown_content: |
             updateFileNameAndSave(); // Initial update after content loaded
 
             logAction('ZenWrite loaded successfully. Scroll sync is active.');
+        }
+
+        // --- New Feature: Trigger Browser Find ---
+        function triggerBrowserFind() {
+            editor.focus();
+            logAction("Press Ctrl+F (Cmd+F on Mac) to use your browser's find feature.");
         }
 
         window.addEventListener('load', initializeApp);

@@ -1676,7 +1676,7 @@ Publish your work in various formats to suit any need.
         }
 
         async function handleExport(format) {
-            const sanitizedName = generateFileName();
+            const sanitizedName = generateCreativeFileName(editor.value);
 
             document.getElementById('export-select').value = ""; // Reset dropdown
 

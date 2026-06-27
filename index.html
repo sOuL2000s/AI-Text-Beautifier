@@ -29,6 +29,9 @@
             --link-color: #3b82f6;
             --accent-color: #3b82f6;
 
+            /* General UI */
+            --radius-md: 6px; /* Consistent border-radius for controls */
+
             /* Header/Controls */
             --header-bg: #ffffff;
             --header-text: #1f2937;
@@ -325,23 +328,57 @@
             border-radius: 4px;
         }
 
-        /* File Name Input */
+        /* Unified File Name Input & AI Button */
+        .control-group-filename {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color); /* Common border for the group */
+            border-radius: var(--radius-md);
+            background-color: var(--control-bg);
+            transition: all var(--transition-speed);
+            padding-right: 0; /* Button will handle right edge */
+            /* Ensure the group has appropriate width behaviour, especially on larger screens */
+            /* max-width: 300px; /* Example: adjust as needed for design */
+        }
+        .control-group-filename:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb, 59, 130, 246), 0.2);
+        }
         #file-name-input {
-            border: none;
+            border: none; /* Remove individual input border */
             background: transparent;
-            /* Use header-control-text for high contrast in header, or fallback to text-color */
-            color: var(--header-control-text, var(--text-color));
-            font-weight: 600; /* Medium bold */
-            font-size: 20px; /* Slightly larger */
-            margin-right: 20px;
-            padding: 2px 5px;
-            width: 250px;
+            padding: 7px 12px; /* Consistent padding with other buttons */
+            font-size: 16px; /* Slightly adjust for visual balance */
+            font-weight: 500;
+            flex-grow: 1; /* Allow input to fill available space */
+            margin-right: 0; /* Remove margin */
+            color: var(--header-text, var(--text-color)); /* Ensure good contrast against header bg */
             transition: color var(--transition-speed);
         }
         #file-name-input:focus {
             outline: none;
-            /* Subtle indication that it's active */
-            box-shadow: 0 1px 0 var(--link-color);
+            box-shadow: none; /* Parent handles the focus state */
+            /* Remove the individual input's bottom border and padding adjustment on focus */
+            /* This prevents vertical shifting and relies on the parent's focus-within shadow */
+            border-bottom: none; /* No dashed border */
+            padding-bottom: 7px; /* Reset padding to match */
+        }
+        .ai-title-button { /* Use new class name */
+            padding: 7px 12px; /* Adjust padding to match input and general buttons */
+            border: none; /* Remove button border */
+            background-color: transparent;
+            color: var(--accent-color); /* Use accent for the sparkle */
+            margin-left: 0;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0; /* Only round right corners */
+            font-size: 14px; /* Ensure sparkle is a reasonable size */
+        }
+        .ai-title-button:hover {
+            background-color: var(--control-hover-bg);
+            color: var(--control-hover-text, var(--accent-color));
+            transform: none; /* No lift for this specific button */
+        }
+        .ai-title-button:active {
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); /* Inner shadow for depth */
         }
 
         /* --- Scrollbar Customization (WebKit Browsers) --- */
@@ -737,12 +774,24 @@
                 gap: 8px; /* Gap between items within a group */
             }
 
-            #file-name-input {
+            /* The .control-group-filename will now correctly stretch to 100% width on mobile */
+            .control-group-filename {
                 width: 100%;
-                margin-right: 0;
-                margin-bottom: 0;
-                font-size: 18px;
-                padding: 5px 0;
+                /* You might want to remove the common border for this specific group on mobile if it looks too heavy */
+                /* border: none; */
+            }
+
+            #file-name-input {
+                /* width: 100%; - flex-grow handles this */
+                /* margin-right: 0; */
+                /* margin-bottom: 0; */
+                font-size: 18px; /* Slightly larger on mobile */
+                padding: 5px 12px; /* Smaller vertical padding for mobile, consistent horizontal */
+            }
+
+            .ai-title-button {
+                padding: 5px 8px; /* Smaller vertical padding to match input, slightly less horizontal for sparkle */
+                font-size: 16px; /* Slightly larger sparkle for mobile touch target */
             }
 
             /* Make buttons and select menus readable but smaller */
@@ -775,9 +824,9 @@
 <body>
     <!-- (Header and Main content remains the same, except for new status-bar span) -->
     <header>
-        <div class="control-group">
+        <div class="control-group-filename"> <!-- Changed class here -->
             <input type="text" id="file-name-input" value="My New Document">
-            <button onclick="updateAITitle()" title="Generate AI Title" style="padding: 4px 8px; font-size: 12px; margin-left: -10px; border-radius: 0 6px 6px 0; border-left: none;">✨</button>
+            <button onclick="updateAITitle()" title="Generate AI Title" class="ai-title-button">✨</button> <!-- Removed all inline styles and ensured class is present -->
         </div>
 
         <!-- MARKDOWN EDITOR CONTROLS -->

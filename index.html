@@ -1706,11 +1706,27 @@ Publish your work in various formats to suit any need.
 
         // NEW HELPER FUNCTION: Encapsulates the actual PDF printing logic
         async function performPdfPrint(sanitizedName, targetPDFTheme, originalUITheme) {
+            // Ensure filename has a .pdf extension for the browser print dialog title
+            const printDialogTitle = sanitizedName.endsWith('.pdf') ? sanitizedName : `${sanitizedName}.pdf`;
             const originalTitle = document.title;
-            document.title = sanitizedName;
+            document.title = printDialogTitle;
 
             // Apply the target PDF theme for printing.
-            applyTheme(targetPDFTheme);
+            // We need to store the current UI theme *before* applying the PDF theme,
+            // so we can restore it correctly after printing.
+            const currentSelectedUITheme = document.getElementById('theme-select').value;
+
+            // Apply the PDF theme if it's different from the currently applied UI theme.
+            // This prevents a double-apply if they are already the same.
+            if (currentSelectedUITheme !== targetPDFTheme) {
+                applyTheme(targetPDFTheme);
+                // Also update the main theme selector to reflect the temporary PDF theme,
+                // so the user sees what's being printed.
+                document.getElementById('theme-select').value = targetPDFTheme;
+            } else {
+                // If they are the same, just ensure it's applied (e.g., re-run if custom colors changed)
+                applyTheme(targetPDFTheme);
+            }
 
             // Ensure fonts are ready before printing to prevent FOUC (Flash Of Unstyled Content)
             if (document.fonts) {
@@ -1727,10 +1743,13 @@ Publish your work in various formats to suit any need.
 
                 // Restore title and original UI theme after printing dialog closes.
                 setTimeout(() => {
+                    // Restore original document title
                     document.title = originalTitle;
-                    // Only restore if the PDF theme was different from the original UI theme.
-                    if (originalUITheme !== targetPDFTheme) {
-                        applyTheme(originalUITheme);
+
+                    // Restore the UI theme to what it was *before* the PDF theme was applied for printing.
+                    if (currentSelectedUITheme !== targetPDFTheme) { // Only change if PDF theme was temporary
+                        applyTheme(currentSelectedUITheme);
+                        document.getElementById('theme-select').value = currentSelectedUITheme; // Update selector
                     }
                     logAction(`PDF generated: ${sanitizedName}.pdf`);
                 }, 1000);
@@ -1738,14 +1757,40 @@ Publish your work in various formats to suit any need.
         }
 
         async function handleExport(format) {
-            const sanitizedName = generateCreativeFileName(editor.value);
+            // Get the user's current input for the filename from the title field
+            let userFileName = fileNameInput.value.trim();
+            const defaultFileNameInputText = "My New Document";
+
+            // If the input is empty or just the default, fall back to a generated name
+            if (!userFileName || userFileName === defaultFileNameInputText) {
+                userFileName = generateCreativeFileName(editor.value); // Fallback to content-based name
+            }
+            
+            // Sanitize the filename to ensure it's valid for file systems,
+            // but prioritize preserving case and spaces as much as possible.
+            let sanitizedForDownload = userFileName
+                .replace(/[\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF]/g, '') // Remove emojis
+                .replace(/[/\?%*:|"<>]/g, '') // Remove strictly illegal characters for file paths
+                .trim()
+                // Handle periods: remove leading/trailing, consolidate multiple
+                .replace(/^\./, '')     // Remove leading periods
+                .replace(/\.$/, '')     // Remove trailing periods
+                .replace(/\.{2,}/g, '.'); // Replace multiple periods with a single one
+            
+            // Truncate to a reasonable length to prevent overly long filenames
+            sanitizedForDownload = sanitizedForDownload.substring(0, 50);
+
+            // If the name is empty after sanitization, provide a final fallback
+            if (!sanitizedForDownload) {
+                sanitizedForDownload = 'document';
+            }
 
             document.getElementById('export-select').value = ""; // Reset dropdown
 
+            const currentUITheme = document.getElementById('theme-select').value;
             switch (format) {
                 case 'pdf':
                     const pdfSettingsGroup = document.getElementById('pdf-settings-group');
-                    const currentUITheme = document.getElementById('theme-select').value;
                     const pdfThemeSelect = document.getElementById('pdf-theme-select');
                     
                     // Get all themes that are explicitly listed as PDF-supported
@@ -1758,10 +1803,9 @@ Publish your work in various formats to suit any need.
                     const shouldDirectPrint = isCurrentThemePdfSupported && !pdfSettingsExplicitlyOpened && pdfSettingsGroup.classList.contains('hidden');
 
                     if (shouldDirectPrint) {
-                        pdfThemeSelect.value = currentUITheme;
-                        updatePDFSettings(); 
+                        pdfThemeSelect.value = currentUITheme; // Ensure the PDF theme selector reflects the current UI theme
                         logAction(`Current theme "${currentUITheme}" is PDF-ready. Printing directly.`);
-                        await performPdfPrint(sanitizedName, currentUITheme, currentUITheme);
+                        await performPdfPrint(sanitizedForDownload, currentUITheme, currentUITheme);
                     } else {
                         if (pdfSettingsGroup.classList.contains('hidden')) {
                             pdfSettingsGroup.classList.remove('hidden');
@@ -1773,8 +1817,8 @@ Publish your work in various formats to suit any need.
                         }
 
                         const targetPDFTheme = pdfThemeSelect.value;
-                        logAction(`Applying PDF Theme: ${targetPDFTheme}...`);
-                        await performPdfPrint(sanitizedName, targetPDFTheme, currentUITheme);
+                        logAction(`Applying PDF Print Theme: ${targetPDFTheme}...`);
+                        await performPdfPrint(sanitizedForDownload, targetPDFTheme, currentUITheme);
                     }
                     break;
                 case 'md':
@@ -1784,7 +1828,7 @@ Publish your work in various formats to suit any need.
                 case 'xml':
                 case 'yaml':
                 case 'html':
-                    exportTextFile(format, sanitizedName);
+                    exportTextFile(format, sanitizedForDownload);
                     break;
             }
         }

@@ -1,17 +1,15 @@
 <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Zen Enso Circle: Represents the 'Zen' in ZenWrite with a brush-stroke feel -->
-  <path d="M82 50C82 67.6731 67.6731 82 50 82C32.3269 82 18 67.6731 18 50C18 32.3269 32.3269 18 50 18C57.5 18 64.5 20.5 70 25" 
-        stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Creative Favicon for ZenWrite -->
   
-  <!-- Modern Stylized Fountain Pen Nib: Represents writing, craftsmanship, and studio precision -->
-  <!-- Uses even-odd filling rule to create transparent cutouts for the breather hole and slit -->
-  <path fill-rule="evenodd" clip-rule="evenodd" 
-        d="M50 22L66 56C66 56 62 70 50 70C38 70 34 56 34 56L50 22ZM50 44C51.1046 44 52 44.8954 52 46C52 47.1046 51.1046 48 50 48C48.8954 48 48 47.1046 48 46C48 44.8954 48.8954 44 50 44ZM49 50H51V62H49V50Z" 
-        fill="currentColor" />
+  <!-- Zen Enso Circle - simplified, slightly incomplete, representing flow and emptiness -->
+  <path d="M85 50C85 70 70 85 50 85C30 85 15 70 15 50C15 30 30 15 50 15C60 15 69 18 75 25" 
+        stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
   
-  <!-- Minimalist Markdown brackets: Embeds the core technical identity of the studio -->
-  <path d="M26 44L20 50L26 56" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M74 44L80 50L74 56" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Stylized Fountain Pen Nib - simplified for clarity at small sizes -->
+  <path d="M50 20L60 50L50 70L40 50L50 20Z" fill="currentColor" /> 
+  <!-- Breather hole -->
+  <circle cx="50" cy="38" r="4" fill="var(--bg-color)" stroke="currentColor" stroke-width="2" />
+  <!-- Slit -->
+  <line x1="50" y1="42" x2="50" y2="60" stroke="var(--bg-color)" stroke-width="2" stroke-linecap="round" />
   
-  <!-- The "currentColor" attribute allows this SVG to inherit the text color of its parent container, matching the active theme -->
 </svg>

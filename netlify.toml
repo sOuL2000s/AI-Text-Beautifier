@@ -1,0 +1,7 @@
+    # netlify.toml
+    [build]
+      # This command replaces the placeholder in your index.html with the actual API key
+      # provided via Netlify's environment variables.
+      # It's crucial for security that the actual API key is NOT committed to your repo.
+      command = "sed -i '/window\\.ZENWRITE_GROQ_API_KEY = \"YOUR_GROQ_API_KEY_PLACEHOLDER\";/c\\        window.ZENWRITE_GROQ_API_KEY = \"'\"$ZENWRITE_GROQ_API_KEY\"'\";' index.html"
+      publish = "." # Assuming your index.html and other assets are in the root of your repository

@@ -822,6 +822,13 @@
     </style>
 </head>
 <body>
+    <script>
+        // This global variable will hold the Groq API key,
+        // which can be dynamically injected by a build process (e.g., Netlify).
+        // For local development, you might temporarily replace "YOUR_GROQ_API_KEY_PLACEHOLDER"
+        // with your actual key, or set up a local server with environment variable handling.
+        window.ZENWRITE_GROQ_API_KEY = "YOUR_GROQ_API_KEY_PLACEHOLDER";
+    </script>
     <!-- (Header and Main content remains the same, except for new status-bar span) -->
     <header>
         <div class="control-group-filename"> <!-- Changed class here -->
@@ -937,6 +944,7 @@
             <input type="file" id="file-upload" style="display: none;" onchange="handleImport(event)">
             <button onclick="document.getElementById('file-upload').click()" title="Load file into editor">Import</button>
             <button id="toggle-pdf-settings-button" title="Customize PDF Layout">PDF Settings</button>
+            <button id="open-timer-button" title="Set a writing timer and enable focus mode.">⏱️ Timer</button>
             <button onclick="resetApplication()" title="Clear saved content, themes, and settings.">Reset App</button>
         </div>
 
@@ -986,6 +994,41 @@
         </div>
     </header>
 
+    <!-- Timer Modal -->
+    <div id="timer-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button" id="close-timer-modal">✕</span>
+            <h2>Writing Timer & Focus Mode</h2>
+            <div class="timer-input-group">
+                <label for="timer-minutes-input">Set Duration (minutes):</label>
+                <input type="number" id="timer-minutes-input" value="25" min="1" max="180">
+            </div>
+            <div class="timer-display" id="timer-display">25:00</div>
+            <div class="timer-controls">
+                <button id="start-timer-button">▶️ Start</button>
+                <button id="pause-timer-button" class="hidden">⏸️ Pause</button>
+                <button id="resume-timer-button" class="hidden">🔄 Resume</button>
+                <button id="reset-timer-button">⏹️ Reset</button>
+            </div>
+            <p class="focus-mode-info">
+                When the timer starts, a focus mode is enabled. If you switch tabs, the timer will
+                automatically pause, and you'll need to resume it manually here.
+            </p>
+        </div>
+    </div>
+
+    <!-- Focus Mode Overlay (appears if timer is active and tab is switched) -->
+    <div id="focus-overlay" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="overlay-message">Focus Mode Active: Timer paused due to tab switch.</h2>
+            <p>Click "Resume" to continue writing, or "Reset" to end the session.</p>
+            <div class="timer-controls">
+                <button id="overlay-resume-button">🔄 Resume</button>
+                <button id="overlay-reset-button">⏹️ Reset</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Hidden elements for potential future use or debugging, kept outside main flow -->
     <div style="display: none;">
         <button id="undo-button">Undo</button>
@@ -1008,6 +1051,7 @@
     <footer id="status-bar">
         <span id="action-log">Ready.</span>
         <div>
+            <span id="external-timer-display" class="hidden">⏱️ 00:00</span>
             <span id="char-count">Characters: 0</span>
             <span id="word-count">Words: 0</span>
             <span id="line-count">Lines: 0</span>
@@ -1044,9 +1088,19 @@
         const FONT_KEY = 'zenwrite_font';
         const COLOR_TEXT_KEY = 'zenwrite_color_text';
         const COLOR_BG_KEY = 'zenwrite_color_bg';
+        const TIMER_STATE_KEY = 'zenwrite_timer_state'; // New: Key for timer state
 
         // --- Synchronization Flag ---
         let isSyncing = false;
+
+        // --- Timer Variables ---
+        let timerInterval = null;
+        let remainingTime = 0; // in seconds
+        let timerDurationMinutes = 25; // default
+        let isTimerActive = false;
+        let isTimerPaused = false;
+        let focusModeEnabled = false;
+        let wasPausedByTabSwitch = false; // To track if timer was paused due to visibility change
 
         // --- Initial Markdown Template ---
         const WELCOME_TEMPLATE = `# ✨ Welcome to ZenWrite: Your Ultimate Markdown Studio ✨
@@ -1959,15 +2013,15 @@ markdown_content: |
             // The API key below is split to potentially bypass simple static scanners.
             // Be aware that this does NOT provide true security. For production,
             // always use server-side environments or environment variables to store secrets.
-            const GROQ_API_KEY = "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"; // Replace with your actual key for local use
+            const GROQ_API_KEY = window.ZENWRITE_GROQ_API_KEY;
 
             if (!text.trim()) {
                 logAction("No text to check.");
                 return;
             }
 
-            if (GROQ_API_KEY === "YOUR_GROQ_API_KEY") {
-                logAction("Please configure your Groq API key in the source code.");
+            if (GROQ_API_KEY === "YOUR_GROQ_API_KEY_PLACEHOLDER" || !GROQ_API_KEY) {
+                logAction("Please configure your Groq API key (ZENWRITE_GROQ_API_KEY).");
                 return;
             }
 
@@ -2230,7 +2284,292 @@ markdown_content: |
             updatePreview();
             updateFileNameAndSave(); // Initial update after content loaded
 
+            // 8. Setup Timer
+            setupTimer();
+            loadTimerState(); // Load timer state after setting up listeners
+
             logAction('ZenWrite loaded successfully. Scroll sync is active.');
+        }
+
+        // --- Timer Functions ---
+        function setupTimer() {
+            const openTimerBtn = document.getElementById('open-timer-button');
+            const timerModal = document.getElementById('timer-modal');
+            const closeTimerModalBtn = document.getElementById('close-timer-modal');
+            const timerMinutesInput = document.getElementById('timer-minutes-input');
+            const timerDisplay = document.getElementById('timer-display');
+            const startTimerBtn = document.getElementById('start-timer-button');
+            const pauseTimerBtn = document.getElementById('pause-timer-button');
+            const resumeTimerBtn = document.getElementById('resume-timer-button');
+            const resetTimerBtn = document.getElementById('reset-timer-button');
+
+            const focusOverlay = document.getElementById('focus-overlay');
+            const overlayMessage = document.getElementById('overlay-message');
+            const overlayResumeBtn = document.getElementById('overlay-resume-button');
+            const overlayResetBtn = document.getElementById('overlay-reset-button');
+
+            openTimerBtn.addEventListener('click', () => {
+                timerModal.classList.remove('hidden');
+            });
+
+            closeTimerModalBtn.addEventListener('click', () => {
+                timerModal.classList.add('hidden');
+            });
+
+            startTimerBtn.addEventListener('click', () => startTimer(parseInt(timerMinutesInput.value)));
+            pauseTimerBtn.addEventListener('click', pauseTimer);
+            resumeTimerBtn.addEventListener('click', resumeTimer);
+            resetTimerBtn.addEventListener('click', resetTimer);
+
+            overlayResumeBtn.addEventListener('click', () => {
+                focusOverlay.classList.add('hidden');
+                resumeTimer();
+            });
+            overlayResetBtn.addEventListener('click', () => {
+                focusOverlay.classList.add('hidden');
+                resetTimer();
+            });
+
+            // Handle browser tab visibility
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            // Initial display update
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            document.getElementById('timer-display').textContent = formattedTime;
+            const externalTimerDisplay = document.getElementById('external-timer-display');
+            externalTimerDisplay.textContent = `⏱️ ${formattedTime}`;
+
+            // Update modal buttons visibility
+            if (isTimerActive && !isTimerPaused) {
+                externalTimerDisplay.classList.remove('hidden');
+                document.getElementById('start-timer-button').classList.add('hidden');
+                document.getElementById('pause-timer-button').classList.remove('hidden');
+                document.getElementById('resume-timer-button').classList.add('hidden');
+            } else if (isTimerActive && isTimerPaused) {
+                document.getElementById('start-timer-button').classList.add('hidden');
+                document.getElementById('pause-timer-button').classList.add('hidden');
+                document.getElementById('resume-timer-button').classList.remove('hidden');
+            } else {
+                document.getElementById('start-timer-button').classList.remove('hidden');
+                document.getElementById('pause-timer-button').classList.add('hidden');
+                document.getElementById('resume-timer-button').classList.add('hidden');
+            }
+        }
+
+        function startTimer(minutes) {
+            if (isTimerActive) return;
+
+            minutes = Math.max(1, minutes); // Ensure at least 1 minute
+            timerDurationMinutes = minutes;
+            remainingTime = minutes * 60;
+            isTimerActive = true;
+            isTimerPaused = false;
+            wasPausedByTabSwitch = false;
+
+            document.getElementById('timer-modal').classList.add('hidden'); // Hide modal on start
+
+            timerInterval = setInterval(() => {
+                remainingTime--;
+                updateTimerDisplay();
+
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isTimerActive = false;
+                    isTimerPaused = false;
+                    focusModeEnabled = false;
+                    wasPausedByTabSwitch = false;
+                    logAction("Timer finished! Great job!");
+                    // Optionally alert the user
+                    setTimeout(() => alert("Time's up! Great job writing!"), 100);
+                    // Re-open timer modal to show finished state
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isTimerActive = false;
+                    isTimerPaused = false;
+                    focusModeEnabled = false;
+                    wasPausedByTabSwitch = false;
+                    logAction("Timer finished! Great job!");
+                    // Optionally alert the user
+                    setTimeout(() => alert("Time's up! Great job writing!"), 100);
+                    // Re-open timer modal to show finished state
+                    document.getElementById('timer-modal').classList.remove('hidden');
+                    localStorage.removeItem(TIMER_STATE_KEY); // Clear timer state from localStorage
+                    document.getElementById('external-timer-display').classList.add('hidden'); // Hide external display
+                }
+            }, 1000);
+
+            enableFocusMode();
+            saveTimerState();
+            logAction(`Timer started for ${minutes} minutes.`);
+        }
+
+        function pauseTimer() {
+            if (!isTimerActive || isTimerPaused) return;
+
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isTimerPaused = true;
+            disableFocusMode(); // Temporarily disable focus mode while paused
+            updateTimerDisplay();
+            saveTimerState();
+            logAction("Timer paused.");
+            document.getElementById('external-timer-display').classList.remove('hidden'); // Ensure it remains visible
+        }
+
+        function resumeTimer() {
+            if (!isTimerActive || !isTimerPaused) return;
+
+            isTimerPaused = false;
+            wasPausedByTabSwitch = false; // Reset tab switch flag
+            
+            // Re-hide timer modal if visible from a pause or tab switch
+            document.getElementById('timer-modal').classList.add('hidden');
+            document.getElementById('focus-overlay').classList.add('hidden');
+
+            timerInterval = setInterval(() => {
+                remainingTime--;
+                updateTimerDisplay();
+
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isTimerActive = false;
+                    isTimerPaused = false;
+                    focusModeEnabled = false;
+                    logAction("Timer finished! Great job!");
+                    setTimeout(() => alert("Time's up! Great job writing!"), 100);
+                    document.getElementById('timer-modal').classList.remove('hidden'); // Re-open
+                    localStorage.removeItem(TIMER_STATE_KEY); // Clear timer state from localStorage
+                    document.getElementById('external-timer-display').classList.add('hidden'); // Hide external display
+                }
+            }, 1000);
+
+            enableFocusMode(); // Re-enable focus mode
+            saveTimerState();
+            logAction("Timer resumed.");
+        }
+
+        function resetTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            remainingTime = 0;
+            isTimerActive = false;
+            isTimerPaused = false;
+            focusModeEnabled = false;
+            wasPausedByTabSwitch = false;
+            document.getElementById('timer-minutes-input').value = timerDurationMinutes; // Reset input to initial duration
+            updateTimerDisplay();
+            disableFocusMode();
+            localStorage.removeItem(TIMER_STATE_KEY);
+            logAction("Timer reset.");
+        }
+
+        function saveTimerState() {
+            const state = {
+                duration: timerDurationMinutes,
+                remaining: remainingTime,
+                isActive: isTimerActive,
+                isPaused: isTimerPaused,
+                focusEnabled: focusModeEnabled
+            };
+            localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(state));
+        }
+
+        function loadTimerState() {
+            const savedState = localStorage.getItem(TIMER_STATE_KEY);
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                timerDurationMinutes = state.duration;
+                remainingTime = state.remaining;
+                isTimerActive = state.isActive;
+                isTimerPaused = state.isPaused;
+                focusModeEnabled = state.focusEnabled;
+
+                // If timer was active when saved, and not paused, resume it
+                if (isTimerActive && !isTimerPaused && remainingTime > 0) {
+                    logAction("Restoring active timer...");
+                    // Give a small moment for UI to load, then resume
+                    setTimeout(() => {
+                        startTimer(timerDurationMinutes); // This will re-start interval
+                        isTimerPaused = false; // Ensure it's not paused
+                        updateTimerDisplay();
+                    }, 100);
+                } else if (isTimerActive && isTimerPaused && remainingTime > 0) {
+                    logAction("Restoring paused timer...");
+                    updateTimerDisplay(); // Just update display to show paused state
+                    // If focus mode was active when paused, re-enable it (but it will be `isPaused=true`)
+                    if (focusModeEnabled) {
+                        enableFocusMode(); // This will put it in 'paused' focus state
+                    }
+                } else { // If timer ended or was not active
+                    resetTimer(); // Reset to default state
+                }
+            }
+            updateTimerDisplay(); // Initial display update even if no saved state
+            if (!isTimerActive || remainingTime <= 0) { // If timer is not active or finished on load
+                document.getElementById('external-timer-display').classList.add('hidden');
+            }
+        }
+
+        function enableFocusMode() {
+            if (!focusModeEnabled) {
+                focusModeEnabled = true;
+                // Request fullscreen when timer starts
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.warn("Fullscreen request denied or failed:", err);
+                        logAction("Fullscreen request failed. You can still write.");
+                    });
+                }
+                logAction("Focus mode enabled.");
+            }
+        }
+
+        function disableFocusMode() {
+            if (focusModeEnabled) {
+                focusModeEnabled = false;
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(err => console.warn("Exit fullscreen denied or failed:", err));
+                }
+                logAction("Focus mode disabled.");
+                // Ensure external timer is hidden if timer is not active after disabling focus mode
+                if (!isTimerActive) {
+                    document.getElementById('external-timer-display').classList.add('hidden');
+                }
+            }
+        }
+
+        function handleVisibilityChange() {
+            const focusOverlay = document.getElementById('focus-overlay');
+            const overlayMessage = document.getElementById('overlay-message');
+
+            if (document.hidden) {
+                // User switched tabs or minimized window
+                if (isTimerActive && !isTimerPaused && focusModeEnabled) {
+                    pauseTimer(); // Automatically pause
+                    wasPausedByTabSwitch = true;
+                    overlayMessage.textContent = "Focus Mode Active: Timer paused due to tab switch.";
+                    focusOverlay.classList.remove('hidden');
+                    logAction("Tab switched, timer paused automatically.");
+                }
+            } else {
+                // User returned to tab
+                if (isTimerActive && isTimerPaused && wasPausedByTabSwitch) {
+                    // Prompt user to resume or reset
+                    overlayMessage.textContent = "Timer was paused because you switched tabs. Continue?";
+                    focusOverlay.classList.remove('hidden');
+                    logAction("Returned to tab. Timer is paused.");
+                }
+            }
         }
 
         // --- New Feature: Trigger Browser Find ---
@@ -2245,7 +2584,7 @@ markdown_content: |
         let isRecording = false;
         const voiceTypeButton = document.getElementById('voice-type-button');
 
-        const GROQ_API_KEY_STT = "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"; // Ensure this matches your actual Groq key
+        const GROQ_API_KEY_STT = window.ZENWRITE_GROQ_API_KEY;
 
         voiceTypeButton.addEventListener('click', toggleVoiceTyping);
 
@@ -2258,8 +2597,8 @@ markdown_content: |
         }
 
         async function startRecording() {
-            if (GROQ_API_KEY_STT === "YOUR_GROQ_API_KEY") {
-                logAction("Please configure your Groq API key in the source code for voice typing.");
+            if (GROQ_API_KEY_STT === "YOUR_GROQ_API_KEY_PLACEHOLDER" || !GROQ_API_KEY_STT) {
+                logAction("Please configure your Groq API key (ZENWRITE_GROQ_API_KEY) for voice typing.");
                 return;
             }
 
@@ -2364,10 +2703,20 @@ markdown_content: |
          */
         async function updateAITitle() {
             const text = editor.value;
-            const GROQ_API_KEY = "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";
+            const GROQ_API_KEY = window.ZENWRITE_GROQ_API_KEY;
 
             if (!text.trim() || text.length < 20) {
                 logAction("Not enough content to generate a title.");
+                return;
+            }
+
+            if (GROQ_API_KEY === "YOUR_GROQ_API_KEY_PLACEHOLDER" || !GROQ_API_KEY) {
+                logAction("AI Title: Groq API key (ZENWRITE_GROQ_API_KEY) is not configured.");
+                // Fallback to local heuristic logic immediately if key is missing
+                const generatedRawName = generateCreativeFileName(editor.value);
+                fileNameInput.value = capitalizeWords(generatedRawName.replace(/-/g, ' '));
+                localStorage.setItem(FILENAME_KEY, fileNameInput.value);
+                logAction("Title generated via fallback.");
                 return;
             }
 
@@ -2452,6 +2801,143 @@ markdown_content: |
             }
             100% {
                 box-shadow: 0 0 0 5px rgba(var(--accent-color-rgb, 59, 130, 246), 0); /* Fallback RGB */
+            }
+        }
+
+        /* --- Timer Modal & Focus Overlay Styles --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000; /* Above all other content */
+            backdrop-filter: blur(5px);
+            transition: background-color var(--transition-speed);
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            padding: 30px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            color: var(--accent-color);
+        }
+
+        .modal-content .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--header-text);
+            padding: 5px 10px;
+            line-height: 1;
+            border-radius: var(--radius-md);
+        }
+        .modal-content .close-button:hover {
+            background-color: var(--control-hover-bg);
+            color: var(--control-hover-text, var(--header-text));
+        }
+
+        .timer-input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .timer-input-group label {
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        #timer-minutes-input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 1em;
+            width: 80px;
+            text-align: center;
+            background-color: var(--control-bg);
+            color: var(--text-color);
+        }
+
+        .timer-display {
+            font-family: var(--editor-font);
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            letter-spacing: 2px;
+        }
+
+        .timer-controls button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1em;
+            cursor: pointer;
+            background-color: var(--control-bg);
+            color: var(--header-control-text, var(--text-color));
+            transition: background-color 0.2s, transform 0.1s, color 0.2s;
+        }
+
+        .timer-controls button:hover {
+            background-color: var(--control-hover-bg);
+            color: var(--control-hover-text, var(--header-control-text, var(--text-color)));
+            transform: translateY(-1px);
+        }
+        .timer-controls button:active {
+            background-color: var(--control-active-bg);
+            transform: translateY(0);
+        }
+
+        .focus-mode-info {
+            font-size: 0.9em;
+            color: var(--text-color);
+            margin-top: 25px;
+            line-height: 1.4;
+            opacity: 0.8;
+        }
+
+        /* Responsive adjustments for timer modal */
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 20px;
+                width: 95%;
+            }
+            .modal-content h2 {
+                font-size: 1.5em;
+            }
+            .timer-display {
+                font-size: 3em;
+            }
+            .timer-controls button {
+                padding: 8px 15px;
+                font-size: 0.9em;
             }
         }
     </style>

@@ -945,6 +945,7 @@
             <button onclick="document.getElementById('file-upload').click()" title="Load file into editor">Import</button>
             <button id="toggle-pdf-settings-button" title="Customize PDF Layout">PDF Settings</button>
             <button id="open-timer-button" title="Set a writing timer and enable focus mode.">⏱️ Timer</button>
+            <button onclick="clearEditor()" title="Clear all content from the editor.">Clear Screen</button>
             <button onclick="resetApplication()" title="Clear saved content, themes, and settings.">Reset App</button>
         </div>
 
@@ -2785,6 +2786,22 @@ markdown_content: |
             updatePreview();
             saveContent();
             updateFileNameAndSave(false);
+        }
+
+        /**
+         * Clears the editor content.
+         */
+        function clearEditor() {
+            const confirmation = confirm("Are you sure you want to clear all content from the editor? This action cannot be undone.");
+            if (confirmation) {
+                pushToUndoStack(); // Save current state before clearing for undo
+                editor.value = '';
+                lastCommittedState = ''; // Reset last committed state
+                updatePreview();
+                saveContent();
+                updateFileNameAndSave(true); // Force update filename to default/empty
+                logAction('Editor content cleared.');
+            }
         }
 
         window.addEventListener('load', initializeApp);

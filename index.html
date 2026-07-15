@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZenWrite: Custom Markdown Studio</title>
     <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <!-- Link to the manifest you created -->
+    <link rel="manifest" href="manifest.json">
+    <!-- Sets the color of the window title bar -->
+    <meta name="theme-color" content="#3b82f6">
 
     <!-- Essential Libraries via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -1060,6 +1064,14 @@
     </footer>
 
     <!-- (Your JavaScript remains the same, no changes needed for this specific request in JS) -->
+    <script>
+        // Register the dummy service worker to enable PWA install prompt
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker Registered', reg))
+                .catch(err => console.error('Service Worker Registration Failed:', err));
+        }
+    </script>
     <script>
         const editor = document.getElementById('editor');
         const preview = document.getElementById('preview');
